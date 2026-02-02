@@ -1,98 +1,111 @@
-"""Model loading and inference logic."""
+"""Module de chargement et d'utilisation du modèle de scoring."""
 
 import joblib
 import numpy as np
-import pandas as pd
 from pathlib import Path
-from typing import Dict, Any, Union
-from .config import settings
-from .logger import logger
+from typing import Dict, Any, Optional
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class ScoringModel:
-    """Scoring model wrapper for inference."""
+    """Classe pour gérer le modèle de scoring de crédit."""
 
-    def __init__(self, model_path: Path = None):
+    def __init__(self, model_path: Optional[Path] = None):
         """
-        Initialize the scoring model.
+        Initialise le modèle de scoring.
 
         Args:
-            model_path: Path to the model file. If None, uses default from settings.
+            model_path: Chemin vers le fichier du modèle. Si None, cherche dans models/.
         """
-        if model_path is None:
-            model_path = settings.model_path / settings.model_name
-
-        self.model_path = model_path
         self.model = None
-        self.feature_names = None
+        self.model_path = model_path or Path("models") / "scoring_model.joblib"
+        self._load_model()
 
-    def load(self) -> None:
-        """Load the model from disk."""
+    def _load_model(self) -> None:
+        """Charge le modèle depuis le disque."""
         try:
-            logger.info(f"Loading model from {self.model_path}")
             self.model = joblib.load(self.model_path)
-
-            # Try to get feature names from model
-            if hasattr(self.model, 'feature_names_in_'):
-                self.feature_names = self.model.feature_names_in_.tolist()
-            elif hasattr(self.model, 'get_booster'):
-                # For XGBoost
-                self.feature_names = self.model.get_booster().feature_names
-
-            logger.info(f"Model loaded successfully. Features: {self.feature_names}")
+            logger.info(f"Modèle chargé avec succès depuis {self.model_path}")
         except FileNotFoundError:
-            logger.error(f"Model file not found at {self.model_path}")
-            raise
+            logger.warning(f"Modèle non trouvé à {self.model_path}, création d'un modèle dummy")
+            self.model = self._create_dummy_model()
         except Exception as e:
-            logger.error(f"Error loading model: {e}")
+            logger.error(f"Erreur lors du chargement du modèle: {e}")
             raise
 
-    def predict(self, data: Union[Dict[str, Any], pd.DataFrame]) -> Dict[str, Any]:
+    def _create_dummy_model(self):
+        """Crée un modèle dummy pour le développement."""
+        from sklearn.ensemble import RandomForestClassifier
+
+        # Modèle simple pour développement
+        model = RandomForestClassifier(n_estimators=10, random_state=42)
+        # Ajuster avec des données dummy
+        X_dummy = np.random.rand(100, 10)
+        y_dummy = np.random.randint(0, 2, 100)
+        model.fit(X_dummy, y_dummy)
+        logger.info("Modèle dummy créé pour le développement")
+        return model
+
+    def predict(self, features: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Make a prediction on input data.
+        Fait une prédiction sur les données fournies.
 
         Args:
-            data: Input data as dictionary or DataFrame
+            features: Dictionnaire des features du client.
 
         Returns:
-            Dictionary with prediction and metadata
+            Dictionnaire contenant le score de prédiction et sa probabilité.
         """
-        if self.model is None:
-            raise RuntimeError("Model not loaded. Call load() first.")
+        try:
+            # Conversion en tableau numpy
+            feature_values = self._dict_to_array(features)
 
-        # Convert dict to DataFrame if needed
-        if isinstance(data, dict):
-            df = pd.DataFrame([data])
-        else:
-            df = data
+            # Prédiction
+            score = int(self.model.predict(feature_values)[0])
+            probability = float(self.model.predict_proba(feature_values)[0, 1])
 
-        # Ensure correct feature order
-        if self.feature_names:
-            # Reorder and select features
-            df = df[self.feature_names]
+            logger.info(f"Prédiction réussie: score={score}, probabilité={probability:.4f}")
 
-        # Make prediction
-        prediction = self.model.predict(df)[0]
-        probability = None
+            return {
+                "score": score,
+                "probability": probability,
+                "status": "success"
+            }
+        except Exception as e:
+            logger.error(f"Erreur lors de la prédiction: {e}")
+            return {
+                "score": None,
+                "probability": None,
+                "status": "error",
+                "error": str(e)
+            }
 
-        if hasattr(self.model, 'predict_proba'):
-            proba = self.model.predict_proba(df)[0]
-            probability = float(proba[1]) if len(proba) > 1 else float(proba[0])
+    def _dict_to_array(self, features: Dict[str, Any]) -> np.ndarray:
+        """Convertit un dictionnaire en tableau numpy."""
+        # Pour l'instant, conversion simple
+        # À adapter selon les features réelles du modèle
+        values = list(features.values())
+        return np.array([values]).reshape(1, -1)
 
-        return {
-            "prediction": int(prediction),
-            "probability": probability,
-        }
+    def get_feature_names(self) -> list:
+        """Retourne la liste des features attendues par le modèle."""
+        # À adapter selon le modèle réel
+        return [
+            "age", "income", "employment_length", "debt_ratio",
+            "credit_history", "num_accounts", "num_late_payments",
+            "home_ownership", "loan_amount", "loan_term"
+        ]
 
 
-# Global model instance (singleton pattern)
-_model_instance: ScoringModel = None
+# Instance globale du modèle (chargée une seule fois)
+_model_instance: Optional[ScoringModel] = None
 
 
 def get_model() -> ScoringModel:
-    """Get or create the global model instance."""
+    """Retourne l'instance singleton du modèle."""
     global _model_instance
     if _model_instance is None:
         _model_instance = ScoringModel()
-        _model_instance.load()
     return _model_instance

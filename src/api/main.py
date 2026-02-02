@@ -8,8 +8,8 @@ from datetime import datetime
 from typing import Dict, Any
 import pandas as pd
 
-from ..config import settings
-from ..logger import logger
+from ..models.config import settings
+from ..models.logger import logger
 from ..models.model import get_model
 from .schemas import ClientFeatures, PredictionResponse, HealthResponse, ErrorResponse
 

@@ -31,7 +31,6 @@ httpx
 pytest-cov
 
 # Profiling / Optimization
-cProfile
 memory-profiler
 
 # Utilities

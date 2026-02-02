@@ -2,7 +2,7 @@
 
 import pytest
 import numpy as np
-from src.model import ScoringModel
+from src.models.model import ScoringModel
 
 
 class TestScoringModel:
@@ -58,7 +58,7 @@ class TestScoringModel:
 
     def test_model_singleton(self):
         """Test que le singleton fonctionne correctement."""
-        from src.model import get_model
+        from src.models.model import get_model
         model1 = get_model()
         model2 = get_model()
         assert model1 is model2
