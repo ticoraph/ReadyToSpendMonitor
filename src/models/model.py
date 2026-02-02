@@ -20,7 +20,7 @@ class ScoringModel:
             model_path: Chemin vers le fichier du modèle. Si None, cherche dans models/.
         """
         self.model = None
-        self.model_path = model_path or Path("models") / "scoring_model.joblib"
+        self.model_path = model_path or Path("models") / "scoring_model.pkl"
         self._load_model()
 
     def _load_model(self) -> None:

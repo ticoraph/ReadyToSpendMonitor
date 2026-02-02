@@ -16,29 +16,14 @@ Ce projet inclut la création d'une API robuste, la conteneurisation pour un dé
 ## 🏗️ Structure du projet
 
 ```
-ReadyToSpendMonitor/
-├── src/                    # Code source
-│   ├── api/               # API FastAPI
-│   ├── models/            # Modèle et logique d'inférence
-│   ├── config.py          # Configuration
-│   └── logger.py          # Logging
-├── tests/                 # Tests unitaires
-├── notebooks/             # Notebooks d'analyse
-├── models/                # Artefacts du modèle
-├── data/                  # Données de référence
-├── logs/                  # Logs de production
-├── docker/                # Configuration Docker
-├── .github/workflows/     # Pipeline CI/CD
-├── Dockerfile
-├── requirements.txt
-└── README.md
+
 ```
 
 ## 🚀 Installation
 
 ### Prérequis
 
-- Python 3.11+
+- Python 3.10
 - Docker
 - Git
 
@@ -46,12 +31,12 @@ ReadyToSpendMonitor/
 
 ```bash
 # Cloner le dépôt
-git clone https://github.com/votre-username/ReadyToSpendMonitor.git
+git clone https://github.com/ticoraph/ReadyToSpendMonitor
 cd ReadyToSpendMonitor
 
 # Créer un environnement virtuel
-python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
+python -m venv .venv
+source .venv/bin/activate  # Windows: venv\Scripts\activate
 
 # Installer les dépendances
 pip install -r requirements.txt
