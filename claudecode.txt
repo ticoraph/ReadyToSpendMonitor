@@ -1,0 +1,15 @@
+export ANTHROPIC_AUTH_TOKEN=ollama
+export ANTHROPIC_BASE_URL=http://localhost:11434
+
+ollama rm gpt-oss:20b
+ollama pull gpt-oss:20b
+ollama pull glm-4.7-flash:latest
+
+
+ollama launch claude --model gpt-oss:20b
+ollama launch claude --model glm-4.7-flash:latest
+
+pip install --upgrade pip
+python -m venv env
+source env/bin/activate
+pip install -r requirements.txt
