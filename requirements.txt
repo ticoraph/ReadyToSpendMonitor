@@ -9,6 +9,9 @@ scikit-learn
 pandas
 numpy
 joblib
+matplotlib
+seaborn
+lightgbm
 
 # Monitoring & Drift Detection
 streamlit
