@@ -1,1 +1,3 @@
-"""Tests pour l'API ReadyToSpend."""
+"""
+Package de tests pour le projet
+"""

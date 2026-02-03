@@ -1,37 +1,27 @@
-# API Framework
+# API
 fastapi
-uvicorn
-gradio
+uvicorn[standard]
+pydantic
+python-multipart
 
-# ML / Model
+# Machine Learning
 scikit-learn
 pandas
 numpy
 joblib
 
-# MLflow (for model tracking)
-mlflow
-
-# Monitoring / Data Drift
-evidently
-nannyml
-
-# Dashboard
+# Monitoring & Drift Detection
 streamlit
+evidently
 plotly
-
-# Logging
-pydantic
-pydantic-settings
 
 # Testing
 pytest
-pytest-asyncio
-httpx
 pytest-cov
+httpx
 
-# Profiling / Optimization
-memory-profiler
+# Logging
+python-json-logger
 
-# Utilities
+# Utils
 python-dotenv

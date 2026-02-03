@@ -1,152 +1,251 @@
-# ReadyToSpendMonitor
+# Prêt à Dépenser - MLOps Scoring API
 
-Mise en production d'un modèle de scoring pour l'entreprise "Prêt à Dépenser".
+## 📋 Description du Projet
 
-Ce projet inclut la création d'une API robuste, la conteneurisation pour un déploiement fluide, et la mise en place d'un monitoring proactif pour garantir la performance et la fiabilité du modèle dans le temps.
+Projet de mise en production d'un modèle de scoring de crédit pour l'entreprise "Prêt à Dépenser". Ce projet démontre une implémentation complète MLOps incluant :
 
-## 📋 Contenu
+- ✅ API REST avec FastAPI
+- ✅ Conteneurisation Docker
+- ✅ Pipeline CI/CD avec GitHub Actions
+- ✅ Monitoring et détection de drift avec Streamlit
+- ✅ Tests unitaires automatisés
+- ✅ Déploiement sur Hugging Face Spaces
 
-- API FastAPI pour les prédictions de scoring
-- Conteneurisation Docker
-- Pipeline CI/CD (GitHub Actions)
-- Tests automatisés
-- Monitoring et détection du data drift
-- Dashboard Streamlit
-
-## 🏗️ Structure du projet
+## 🏗️ Architecture du Projet
 
 ```
-
+pret-a-depenser-mlops/
+├── api/                    # Code de l'API FastAPI
+│   ├── main.py            # Point d'entrée de l'API
+│   └── schemas.py         # Schémas de validation
+├── models/                 # Modèles ML et artefacts
+│   └── model.pkl          # Modèle entraîné (à ajouter)
+├── data/                   # Données de référence
+│   └── reference_data.csv # Données d'entraînement (à ajouter)
+├── monitoring/            # Dashboard de monitoring
+│   └── app.py            # Application Streamlit
+├── tests/                 # Tests unitaires
+│   └── test_api.py       # Tests de l'API
+├── notebooks/             # Notebooks d'analyse
+│   └── drift_analysis.ipynb
+├── scripts/               # Scripts utilitaires
+│   └── train_model.py    # Entraînement du modèle
+├── .github/workflows/     # CI/CD
+│   └── deploy.yml        # Pipeline GitHub Actions
+├── Dockerfile            # Configuration Docker
+├── requirements.txt      # Dépendances Python
+└── .gitignore           # Fichiers à ignorer
 ```
 
-## 🚀 Installation
+## 🚀 Installation et Lancement
 
 ### Prérequis
-
-- Python 3.10
-- Docker
+- Python 3.9+
+- Docker (optionnel)
 - Git
 
-### Installation locale
+### Installation Locale
 
 ```bash
-# Cloner le dépôt
-git clone https://github.com/ticoraph/ReadyToSpendMonitor
-cd ReadyToSpendMonitor
+# Cloner le repository
+git clone https://github.com/votre-username/pret-a-depenser-mlops.git
+cd pret-a-depenser-mlops
 
 # Créer un environnement virtuel
-python -m venv .venv
-source .venv/bin/activate  # Windows: venv\Scripts\activate
+python -m venv venv
+source venv/bin/activate  # Linux/Mac
+# ou
+venv\Scripts\activate  # Windows
 
 # Installer les dépendances
 pip install -r requirements.txt
 
-# Configurer l'environnement (optionnel)
-cp .env.example .env
+# Ajouter vos données et modèle
+# - Copier votre modèle dans models/model.pkl
+# - Copier vos données dans data/reference_data.csv
 ```
 
-### Installation du modèle
-
-Placez votre fichier de modèle entraîné dans le répertoire `models/` avec le nom `scoring_model.pkl`.
-
-## 🏃 Lancer l'API
-
-### En local
+### Lancement de l'API
 
 ```bash
-# Lancer l'API avec uvicorn
-uvicorn src.api.main:app --host 0.0.0.0 --port 8000 --reload
+# Méthode 1 : Uvicorn
+uvicorn api.main:app --reload --host 0.0.0.0 --port 8000
+
+# Méthode 2 : Python
+python -m api.main
+
+# L'API sera accessible sur http://localhost:8000
+# Documentation interactive : http://localhost:8000/docs
 ```
 
-L'API sera accessible sur http://localhost:8000
-
-- Documentation Swagger: http://localhost:8000/docs
-- Endpoint de santé: http://localhost:8000/health
-
-### Avec Docker
+### Lancement avec Docker
 
 ```bash
-# Construire l'image Docker
+# Construire l'image
 docker build -t scoring-api .
 
 # Lancer le conteneur
-docker run -p 8000:8000 -v $(pwd)/models:/app/models scoring-api
+docker run -p 8000:8000 scoring-api
+
+# L'API sera accessible sur http://localhost:8000
 ```
 
-### Avec Docker Compose
+### Lancement du Dashboard de Monitoring
 
 ```bash
-cd docker
-docker-compose up -d
+# Dans un nouveau terminal
+streamlit run monitoring/app.py
+
+# Le dashboard sera accessible sur http://localhost:8501
 ```
 
-## 🧪 Exécuter les tests
+## 📊 Utilisation de l'API
+
+### Exemple de requête avec curl
 
 ```bash
-# Exécuter tous les tests
-pytest
-
-# Exécuter avec couverture
-pytest --cov=src --cov-report=html
-
-# Exécuter un test spécifique
-pytest tests/test_api.py -v
+curl -X POST "http://localhost:8000/predict" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "age": 35,
+    "income": 50000,
+    "loan_amount": 15000,
+    "employment_length": 5,
+    "credit_score": 720
+  }'
 ```
 
-## 📊 Monitoring
+### Exemple de réponse
 
-### Dashboard Streamlit
+```json
+{
+  "client_id": "auto_generated",
+  "score": 0.78,
+  "decision": "APPROVED",
+  "confidence": 0.85,
+  "inference_time_ms": 15.3
+}
+```
+
+### Points de terminaison disponibles
+
+- `GET /` : Page d'accueil
+- `GET /health` : Vérification de santé de l'API
+- `POST /predict` : Prédiction de score
+- `GET /docs` : Documentation Swagger interactive
+
+## 🧪 Tests
 
 ```bash
-streamlit run notebooks/dashboard.py
+# Lancer tous les tests
+pytest tests/ -v
+
+# Lancer avec couverture
+pytest tests/ --cov=api --cov-report=html
 ```
 
-Le dashboard affiche :
-- Distribution des scores prédits
-- Latence de l'API
-- Temps d'inférence
-- Analyse du data drift
+## 📈 Monitoring
 
-### Logs
+Le dashboard Streamlit affiche :
 
-Les logs sont stockés dans `logs/` :
-- `api.log`: Logs de l'API
-- `predictions.csv`: Données des prédictions pour l'analyse du drift
+1. **Métriques en temps réel**
+   - Nombre de prédictions
+   - Temps d'inférence moyen
+   - Distribution des scores
+
+2. **Détection de Data Drift**
+   - Comparaison distributions (référence vs production)
+   - Tests statistiques (KS, Chi2)
+   - Alertes automatiques
+
+3. **Performance opérationnelle**
+   - Latence de l'API
+   - Taux d'erreur
+   - Logs récents
 
 ## 🔄 Pipeline CI/CD
 
-Le pipeline GitHub Actions automatise :
-1. Exécution des tests à chaque push
-2. Construction de l'image Docker
-3. Déploiement sur la branche main
+Le pipeline GitHub Actions s'exécute automatiquement à chaque push sur `main` :
 
-## 📝 Interprétation du monitoring
+1. ✅ Installation des dépendances
+2. ✅ Exécution des tests unitaires
+3. ✅ Construction de l'image Docker
+4. ✅ Déploiement sur Hugging Face Spaces (optionnel)
 
-### Distribution des scores
-- **Score 0**: Client à faible risque
-- **Score 1**: Client à haut risque
+### Configuration requise
 
-### Métriques clés
-| Métrique | Description | Seuil d'alerte |
-|----------|-------------|----------------|
-| Latence | Temps de réponse de l'API | > 500ms |
-| Temps d'inférence | Temps de calcul du modèle | > 100ms |
-| Taux d'erreur | Requêtes en échec | > 5% |
-| Drift | Écart distribution des données | > 0.3 |
+Ajouter ces secrets dans GitHub Settings > Secrets :
 
-## 🔧 Configuration
+- `HF_TOKEN` : Token Hugging Face (optionnel)
 
-La configuration se fait via variables d'environnement ou fichier `.env` :
+## 📦 Déploiement sur Hugging Face Spaces
 
 ```bash
-API_HOST=0.0.0.0
-API_PORT=8000
-LOG_LEVEL=INFO
-MODEL_PATH=models
+# 1. Créer un nouveau Space sur Hugging Face
+# 2. Configurer le secret HF_TOKEN dans GitHub
+# 3. Pusher sur la branche main
+git push origin main
+
+# Le déploiement se fait automatiquement via GitHub Actions
 ```
 
-## 📚 Documentation
+## 🔍 Data Drift Analysis
 
-- [Documentation FastAPI](https://fastapi.tiangolo.com/)
-- [Documentation Docker](https://docs.docker.com/)
-- [Documentation Evidently](https://docs.evidentlyai.com/)
+Le notebook `notebooks/drift_analysis.ipynb` contient :
+
+- Analyse comparative des distributions
+- Tests statistiques (Kolmogorov-Smirnov, Chi-Square)
+- Visualisations des drifts
+- Recommandations de re-entraînement
+
+## ⚡ Optimisations Implémentées
+
+1. **Chargement du modèle au démarrage** (pas à chaque requête)
+2. **Validation des entrées** avec Pydantic
+3. **Logging structuré** en JSON
+4. **Gestion d'erreurs robuste**
+5. **Cache des prédictions** (optionnel)
+
+## 📝 Structure des Logs
+
+Les logs de production contiennent :
+
+```json
+{
+  "timestamp": "2025-02-02T10:30:00",
+  "client_id": "client_123",
+  "input": {...},
+  "output": {...},
+  "inference_time_ms": 12.5,
+  "model_version": "v1.0.0"
+}
+```
+
+## 🛡️ Sécurité
+
+- Validation stricte des entrées
+- Gestion des secrets avec variables d'environnement
+- Pas de données sensibles dans les logs
+- Rate limiting (à implémenter en production)
+
+## 🤝 Contribution
+
+Ce projet est un travail académique pour la formation Data Science.
+
+## 📄 Licence
+
+MIT License
+
+## 👤 Auteur
+
+Votre Nom - Data Scientist @ Prêt à Dépenser (Projet Académique)
+
+## 🙏 Remerciements
+
+- Chloé Dubois (Lead Data Scientist)
+- Équipe Crédit Express
+- OpenClassrooms
+
+---
+
+**Note** : Ce projet est à des fins éducatives dans le cadre d'une formation MLOps.

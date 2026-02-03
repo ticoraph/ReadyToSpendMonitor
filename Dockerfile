@@ -1,28 +1,23 @@
-# Dockerfile pour l'API de scoring
+# Utiliser une image Python légère
+FROM python:3.9-slim
 
-FROM python:3.11-slim
-
-# Définition du répertoire de travail
+# Définir le répertoire de travail
 WORKDIR /app
 
-# Installation des dépendances système
-RUN apt-get update && apt-get install -y \
-    gcc \
-    && rm -rf /var/lib/apt/lists/*
-
-# Copie du fichier requirements et installation
+# Copier les fichiers de requirements
 COPY requirements.txt .
+
+# Installer les dépendances
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copie du code source
-COPY src/ ./src/
-COPY models/ ./models/  # Si vous avez des modèles pré-entraînés
+# Copier tout le code de l'application
+COPY . .
 
-# Création du répertoire de logs
-RUN mkdir -p logs
+# Créer les dossiers nécessaires
+RUN mkdir -p models data logs
 
-# Exposition du port
+# Exposer le port 8000
 EXPOSE 8000
 
-# Commande de démarrage
-CMD ["uvicorn", "src.api:app", "--host", "0.0.0.0", "--port", "8000"]
+# Commande pour lancer l'API
+CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000"]
