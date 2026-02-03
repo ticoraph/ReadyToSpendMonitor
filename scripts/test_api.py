@@ -54,46 +54,143 @@ def main():
         return
     
     # Test 2: Prédiction avec bon profil
-    print("📊 Scénario 1: Bon profil (devrait être approuvé)")
+    print("📊 Scénario 1: MAUVAIS PROFIL")
     test_prediction({
-        "age": 35,
-        "income": 60000,
-        "loan_amount": 15000,
-        "employment_length": 8,
-        "credit_score": 750
+    "EXT_SOURCE_3": 0.1595195404777181,
+    "EXT_SOURCE_2": 0.7896543511176771,
+    "PAYMENT_RATE": 0.03614715189873418,
+    "DAYS_EMPLOYED": -2329.0,
+    "DAYS_REGISTRATION": -5170.0,
+    "EXT_SOURCE_1": 0.7526144906031748,
+    "DAYS_BIRTH": -19241,
+    "DAYS_ID_PUBLISH": -812,
+    "DAYS_EMPLOYED_PERC": 0.1210436048022452,
+    "AMT_ANNUITY": 20560.5,
+    "REGION_POPULATION_RELATIVE": 0.01885,
+    "INSTAL_DBD_MEAN": 8.857142857142858,
+    "ANNUITY_INCOME_PERC": 0.1523,
+    "INSTAL_DBD_SUM": 62.0,
+    "ACTIVE_DAYS_CREDIT_ENDDATE_MIN": 411.0,
+    "DAYS_LAST_PHONE_CHANGE": -1740.0,
+    "INSTAL_AMT_PAYMENT_MIN": 3951.0,
+    "INCOME_CREDIT_PERC": 0.23734177215189872,
+    "INSTAL_DAYS_ENTRY_PAYMENT_MAX": -1628.0,
+    "BURO_DAYS_CREDIT_VAR": 240043.66666666672,
+    "ACTIVE_DAYS_CREDIT_UPDATE_MEAN": -10.666666666666666,
+    "APPROVED_DAYS_DECISION_MAX": -1740.0,
+    "AMT_GOODS_PRICE": 450000.0,
+    "CLOSED_DAYS_CREDIT_MAX": -857.0,
+    "PREV_APP_CREDIT_PERC_VAR": 0,
+    "PREV_APP_CREDIT_PERC_MEAN": 1.0440786984487325,
+    "INSTAL_DBD_MAX": 36.0,
+    "INSTAL_DAYS_ENTRY_PAYMENT_SUM": -15365.0,
+    "BURO_AMT_CREDIT_SUM_MEAN": 207623.57142857142,
+    "POS_MONTHS_BALANCE_MEAN": -72.55555555555556,
+    "INCOME_PER_PERSON": 67500.0,
+    "POS_NAME_CONTRACT_STATUS_Active_MEAN": 0.7777777777777778,
+    "POS_NAME_CONTRACT_STATUS_Completed_MEAN": 0.2222222222222222,
+    "PREV_HOUR_APPR_PROCESS_START_MEAN": 13.0,
+    "ACTIVE_DAYS_CREDIT_MAX": -49.0,
+    "ACTIVE_DAYS_CREDIT_MEAN": -309.3333333333333,
+    "APPROVED_APP_CREDIT_PERC_VAR": 0,
+    "AMT_CREDIT": 568800.0,
+    "INSTAL_AMT_PAYMENT_MAX": 17397.9,
+    "PREV_DAYS_DECISION_MAX": -1740.0
     })
     
     # Test 3: Prédiction avec profil risqué
-    print("📊 Scénario 2: Profil risqué (peut être rejeté)")
+    print("📊 Scénario 2: BON PROFIL")
     test_prediction({
-        "age": 22,
-        "income": 25000,
-        "loan_amount": 40000,
-        "employment_length": 1,
-        "credit_score": 580
+    "EXT_SOURCE_3": 0.2636468134452008,
+    "EXT_SOURCE_2": 0.6844067238529257,
+    "PAYMENT_RATE": 0.07320777642770353,
+    "DAYS_EMPLOYED": -1007.0,
+    "DAYS_REGISTRATION": -5719.0,
+    "EXT_SOURCE_1": 0.3441652580978948,
+    "DAYS_BIRTH": -13563,
+    "DAYS_ID_PUBLISH": -4044,
+    "DAYS_EMPLOYED_PERC": 0.07424611074246111,
+    "AMT_ANNUITY": 21690.0,
+    "REGION_POPULATION_RELATIVE": 0.032561,
+    "INSTAL_DBD_MEAN": 4.275,
+    "ANNUITY_INCOME_PERC": 0.1205,
+    "INSTAL_DBD_SUM": 171.0,
+    "ACTIVE_DAYS_CREDIT_ENDDATE_MIN": 349.0,
+    "DAYS_LAST_PHONE_CHANGE": -317.0,
+    "INSTAL_AMT_PAYMENT_MIN": 36.99,
+    "INCOME_CREDIT_PERC": 0.6075334143377886,
+    "INSTAL_DAYS_ENTRY_PAYMENT_MAX": -4.0,
+    "BURO_DAYS_CREDIT_VAR": 0,
+    "ACTIVE_DAYS_CREDIT_UPDATE_MEAN": -17.0,
+    "APPROVED_DAYS_DECISION_MAX": -318.0,
+    "AMT_GOODS_PRICE": 225000.0,
+    "CLOSED_DAYS_CREDIT_MAX": 0,
+    "PREV_APP_CREDIT_PERC_VAR": 0.009351982573951305,
+    "PREV_APP_CREDIT_PERC_MEAN": 0.9316187797200455,
+    "INSTAL_DBD_MAX": 20.0,
+    "INSTAL_DAYS_ENTRY_PAYMENT_SUM": -6086.0,
+    "BURO_AMT_CREDIT_SUM_MEAN": 124195.68,
+    "POS_MONTHS_BALANCE_MEAN": -6.0,
+    "INCOME_PER_PERSON": 90000.0,
+    "POS_NAME_CONTRACT_STATUS_Active_MEAN": 0.9090909090909091,
+    "POS_NAME_CONTRACT_STATUS_Completed_MEAN": 0.09090909090909091,
+    "PREV_HOUR_APPR_PROCESS_START_MEAN": 19.5,
+    "ACTIVE_DAYS_CREDIT_MAX": -17.0,
+    "ACTIVE_DAYS_CREDIT_MEAN": -17.0,
+    "APPROVED_APP_CREDIT_PERC_VAR": 0.009351982573951305,
+    "AMT_CREDIT": 296280.0,
+    "INSTAL_AMT_PAYMENT_MAX": 22500.0,
+    "PREV_DAYS_DECISION_MAX": -318.0
     })
     
-    # Test 4: Prédiction avec profil moyen
-    print("📊 Scénario 3: Profil moyen")
-    test_prediction({
-        "age": 45,
-        "income": 50000,
-        "loan_amount": 25000,
-        "employment_length": 15,
-        "credit_score": 680
-    })
     
     # Test 5: Test de charge (10 requêtes)
     print("🔥 Test de charge (10 requêtes)...")
     times = []
     for i in range(10):
+        increment = i-1000
         start = time.time()
         response = requests.post(f"{API_URL}/predict", json={
-            "age": 30 + i,
-            "income": 50000,
-            "loan_amount": 20000,
-            "employment_length": 5,
-            "credit_score": 700
+        "EXT_SOURCE_3": 0.2636468134452008,
+        "EXT_SOURCE_2": 0.6844067238529257,
+        "PAYMENT_RATE": 0.07320777642770353,
+        "DAYS_EMPLOYED": -1007.0 + increment,
+        "DAYS_REGISTRATION": -5719.0,
+        "EXT_SOURCE_1": 0.3441652580978948,
+        "DAYS_BIRTH": -13563 + increment,
+        "DAYS_ID_PUBLISH": -4044,
+        "DAYS_EMPLOYED_PERC": 0.07424611074246111,
+        "AMT_ANNUITY": 21690.0,
+        "REGION_POPULATION_RELATIVE": 0.032561,
+        "INSTAL_DBD_MEAN": 4.275,
+        "ANNUITY_INCOME_PERC": 0.1205,
+        "INSTAL_DBD_SUM": 171.0,
+        "ACTIVE_DAYS_CREDIT_ENDDATE_MIN": 349.0,
+        "DAYS_LAST_PHONE_CHANGE": -317.0,
+        "INSTAL_AMT_PAYMENT_MIN": 36.99,
+        "INCOME_CREDIT_PERC": 0.6075334143377886,
+        "INSTAL_DAYS_ENTRY_PAYMENT_MAX": -4.0,
+        "BURO_DAYS_CREDIT_VAR": 0,
+        "ACTIVE_DAYS_CREDIT_UPDATE_MEAN": -17.0,
+        "APPROVED_DAYS_DECISION_MAX": -318.0,
+        "AMT_GOODS_PRICE": 225000.0,
+        "CLOSED_DAYS_CREDIT_MAX": 0,
+        "PREV_APP_CREDIT_PERC_VAR": 0.009351982573951305,
+        "PREV_APP_CREDIT_PERC_MEAN": 0.9316187797200455,
+        "INSTAL_DBD_MAX": 20.0,
+        "INSTAL_DAYS_ENTRY_PAYMENT_SUM": -6086.0,
+        "BURO_AMT_CREDIT_SUM_MEAN": 124195.68,
+        "POS_MONTHS_BALANCE_MEAN": -6.0,
+        "INCOME_PER_PERSON": 90000.0,
+        "POS_NAME_CONTRACT_STATUS_Active_MEAN": 0.9090909090909091,
+        "POS_NAME_CONTRACT_STATUS_Completed_MEAN": 0.09090909090909091,
+        "PREV_HOUR_APPR_PROCESS_START_MEAN": 19.5,
+        "ACTIVE_DAYS_CREDIT_MAX": -17.0,
+        "ACTIVE_DAYS_CREDIT_MEAN": -17.0,
+        "APPROVED_APP_CREDIT_PERC_VAR": 0.009351982573951305,
+        "AMT_CREDIT": 296280.0,
+        "INSTAL_AMT_PAYMENT_MAX": 22500.0,
+        "PREV_DAYS_DECISION_MAX": -318.0
         })
         duration = (time.time() - start) * 1000
         times.append(duration)

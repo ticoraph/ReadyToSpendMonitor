@@ -8,8 +8,8 @@ sauvegardés pour faire des prédictions sur de nouvelles données.
 import pandas as pd
 import numpy as np
 from lightgbm_with_simple_features import (
-    load_model_ensemble, 
-    predict_with_ensemble,
+    load_model, 
+    predict_with_model,
     application_train_test,
     bureau_and_balance,
     previous_applications,
@@ -28,25 +28,25 @@ def prepare_features_for_prediction(num_rows=None):
     pandas DataFrame : DataFrame avec toutes les features nécessaires
     """
     # Charger et préparer les données de la même façon que pendant l'entraînement
-    df = application_train_test(num_rows)
+    df = application_train_test()
     
     bureau = bureau_and_balance(num_rows)
     df = df.join(bureau, how='left', on='SK_ID_CURR')
     del bureau
     
-    prev = previous_applications(num_rows)
+    prev = previous_applications()
     df = df.join(prev, how='left', on='SK_ID_CURR')
     del prev
     
-    pos = pos_cash(num_rows)
+    pos = pos_cash()
     df = df.join(pos, how='left', on='SK_ID_CURR')
     del pos
     
-    ins = installments_payments(num_rows)
+    ins = installments_payments()
     df = df.join(ins, how='left', on='SK_ID_CURR')
     del ins
     
-    cc = credit_card_balance(num_rows)
+    cc = credit_card_balance()
     df = df.join(cc, how='left', on='SK_ID_CURR')
     del cc
     
@@ -65,7 +65,7 @@ def main_predict():
     print("=" * 80)
     
     # Charger l'ensemble de modèles
-    model_data = load_model_ensemble('lgbm_model_ensemble.pkl')
+    model_data = load_model('models/model.pkl')
     
     print("\n" + "=" * 80)
     print("PRÉPARATION DES DONNÉES")
@@ -83,7 +83,7 @@ def main_predict():
     print("=" * 80)
     
     # Faire des prédictions
-    predictions = predict_with_ensemble(model_data, test_df)
+    predictions = predict_with_model(model_data, test_df)
     
     # Afficher quelques statistiques
     print(f"\nStatistiques des prédictions:")
@@ -99,7 +99,7 @@ def main_predict():
     })
     
     # Sauvegarder les prédictions
-    output_file = 'predictions_from_loaded_model.csv'
+    output_file = 'output/predictions_from_loaded_model.csv'
     submission.to_csv(output_file, index=False)
     print(f"\nPrédictions sauvegardées dans: {output_file}")
     

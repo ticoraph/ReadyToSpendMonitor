@@ -53,8 +53,10 @@ def load_model():
     
     try:
         if os.path.exists(model_path):
-            MODEL = joblib.load(model_path)
+            MODEL = joblib.load(model_path)["model"]
             logger.info(f"✅ Modèle chargé avec succès depuis {model_path}")
+            print(type(MODEL))
+            print(MODEL.keys() if isinstance(MODEL, dict) else MODEL)
         else:
             logger.warning(f"⚠️ Modèle non trouvé à {model_path}. Utilisation d'un modèle de démonstration.")
             # Créer un modèle simple pour la démo
@@ -128,13 +130,6 @@ async def health_check():
 async def predict(client_data: ClientData, request: Request):
     """
     Effectue une prédiction de score de crédit
-    
-    - **age**: Âge du client (18-100)
-    - **income**: Revenu annuel en euros
-    - **loan_amount**: Montant du prêt demandé
-    - **employment_length**: Ancienneté professionnelle en années
-    - **credit_score**: Score de crédit (300-850)
-    
     Retourne un score de solvabilité entre 0 et 1, et une décision.
     """
     
@@ -147,13 +142,7 @@ async def predict(client_data: ClientData, request: Request):
         start_time = time.time()
         
         # Préparer les données pour la prédiction
-        features = pd.DataFrame([{
-            'age': client_data.age,
-            'income': client_data.income,
-            'loan_amount': client_data.loan_amount,
-            'employment_length': client_data.employment_length,
-            'credit_score': client_data.credit_score
-        }])
+        features = pd.DataFrame([client_data.model_dump()])
         
         # Prédiction
         try:

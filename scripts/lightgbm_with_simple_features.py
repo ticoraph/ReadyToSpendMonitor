@@ -289,7 +289,7 @@ def save_best_model(model, feature_names, filename='models/model.pkl'):
     return filename
 
 # Load model ensemble from pickle file
-def load_model_ensemble(filename='models/model.pkl'):
+def load_model(filename='models/model.pkl'):
     """
     Load the trained model from a pickle file
     
@@ -319,7 +319,7 @@ def predict_with_model(model_data, X):
     Parameters:
     -----------
     model_data : dict
-        Dictionary containing the model and feature names (from load_model_ensemble)
+        Dictionary containing the model and feature names (from load_model)
     X : pandas DataFrame
         Features to predict on (must contain all required features)
     
