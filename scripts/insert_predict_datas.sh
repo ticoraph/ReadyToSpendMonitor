@@ -1,3 +1,0 @@
-python - <<EOF
-
-EOF

@@ -161,8 +161,3 @@ class HealthResponse(BaseModel):
             }
         }
 
-class InsertData(BaseModel):
-    status: str
-    message: str
-    output: Optional[str] = None
-    error: Optional[str] = None

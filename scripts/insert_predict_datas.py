@@ -5,26 +5,40 @@ Script de test rapide de l'API
 import requests
 import json
 import time
-#import random
 import pandas as pd
-#from datetime import datetime
 import numpy as np
+import logging
+import sys
+import os
 
-API_URL = "http://localhost:8000"
+# Configuration du logger
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s | %(levelname)s | %(message)s",
+    handlers=[logging.StreamHandler(sys.stdout)]
+)
+
+logger = logging.getLogger(__name__)
+
+API_URL = os.getenv("API_BASE_URL", "http://localhost:8000")
 CSV_PATH = "output/dataset_test_top40_clean.csv"
 
 def test_health():
     """Test du health check"""
     print("🔍 Test Health Check...")
+    logger.info("🔍 Test Health Check")
     response = requests.get(f"{API_URL}/health")
     print(f"   Status: {response.status_code}")
     print(f"   Response: {response.json()}")
-    print()
+    logger.info(f"Health status={response.status_code} response={response.json()}")
 
 def test_prediction(client_data):
     """Test d'une prédiction"""
     print(f"🎯 Test Prédiction...")
     print(f"   Input: {json.dumps(client_data, indent=2)}")
+
+    logger.info("🎯 Test Prédiction")
+    logger.debug(f"Payload: {json.dumps(client_data, indent=2)}")
     
     start = time.time()
     response = requests.post(f"{API_URL}/predict", json=client_data)
@@ -42,6 +56,22 @@ def test_prediction(client_data):
     else:
         print(f"   Error: {response.text}")
     print()
+
+    if response.ok:
+        result = response.json()
+        logger.info(
+            f"Prediction OK | "
+            f"score={result['score']} | "
+            f"decision={result['decision']} | "
+            f"confidence={result['confidence']} | "
+            f"time={duration:.2f}ms"
+        )
+    else:
+        logger.error(
+            f"Prediction FAILED | "
+            f"status={response.status_code} | "
+            f"error={response.text}"
+        )
 
 def main():
     print("=" * 60)
@@ -150,7 +180,10 @@ def main():
     #########
 
     def load_dataset(path: str) -> pd.DataFrame:
+
+        logger.info(f"📄 Chargement du dataset : {CSV_PATH}")
         df = pd.read_csv(path)
+        logger.info(f"Dataset chargé : {df.shape[0]} lignes / {df.shape[1]} features")
 
         if "SK_ID_CURR" in df.columns:
             df = df.drop(columns=["SK_ID_CURR"])
@@ -198,6 +231,15 @@ def main():
             f"{result['latency_ms']:.2f} ms"
         )
 
+        if result["status_code"] == 200:
+            logger.info(
+                f"Ligne {idx} | OK | {result['latency_ms']:.2f} ms"
+            )
+        else:
+            logger.warning(
+                f"Ligne {idx} | KO | status={result['status_code']}"
+            )
+
     ########
 
     
@@ -214,6 +256,17 @@ def main():
     print("=" * 60)
     print("✅ Tests terminés!")
     print("=" * 60)
+
+    logger.info("📊 Résumé des tests")
+    logger.info(f"Total requêtes : {len(results)}")
+    logger.info(f"Succès (200)   : {len(latencies)}")
+
+    if latencies:
+        logger.info(f"Latence moy.   : {np.mean(latencies):.2f} ms")
+        logger.info(f"Latence min    : {np.min(latencies):.2f} ms")
+        logger.info(f"Latence max    : {np.max(latencies):.2f} ms")
+
+    logger.info("✅ Tests terminés")
 
 if __name__ == "__main__":
     main()
