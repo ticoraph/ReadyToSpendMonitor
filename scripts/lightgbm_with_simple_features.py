@@ -512,7 +512,7 @@ def main():
     with timer("Run LightGBM with kfold"):
         feat_importance_40, models_40 = kfold_lightgbm(
         df,
-        num_folds=2,
+        num_folds=5,
         stratified=True,
         save_models=True,
         selected_features=top_40_features

@@ -11,7 +11,7 @@ import pandas as pd
 import numpy as np
 
 API_URL = "http://localhost:8000"
-CSV_PATH = "output/dataset_train_top40.csv"
+CSV_PATH = "output/dataset_test_top40_clean.csv"
 
 def test_health():
     """Test du health check"""
@@ -155,9 +155,15 @@ def main():
         if "SK_ID_CURR" in df.columns:
             df = df.drop(columns=["SK_ID_CURR"])
 
+        # Remplacer Inf/-Inf par NaN
         df = df.replace([np.inf, -np.inf], np.nan)
-        df = df.fillna(0)
-        
+
+        # Calculer la médiane de chaque colonne (ignorer les NaN)
+        medians = df.median()
+
+        # Remplacer NaN par la médiane
+        df = df.fillna(medians)
+
         return df
     
     def send_row_to_api(row: pd.Series, api_url: str):

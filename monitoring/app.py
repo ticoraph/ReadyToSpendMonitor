@@ -29,7 +29,7 @@ def load_production_logs():
     """
     Charge les logs de production
     """
-    logs_file = "production_logs.json"
+    logs_file = "logs/production_logs.json"
     
     if not os.path.exists(logs_file):
         return pd.DataFrame()
@@ -67,20 +67,7 @@ def load_reference_data():
     """
     Charge les données de référence (entraînement)
     """
-    ref_file = "data/reference_data.csv"
-    
-    if not os.path.exists(ref_file):
-        # Créer des données de référence simulées
-        np.random.seed(42)
-        n_samples = 1000
-        reference = pd.DataFrame({
-            'age': np.random.randint(18, 70, n_samples),
-            'income': np.random.normal(45000, 15000, n_samples),
-            'loan_amount': np.random.normal(20000, 10000, n_samples),
-            'employment_length': np.random.randint(0, 30, n_samples),
-            'credit_score': np.random.normal(650, 100, n_samples)
-        })
-        return reference
+    ref_file = "output/dataset_train_top40_clean.csv"
     
     try:
         return pd.read_csv(ref_file)
@@ -240,7 +227,48 @@ Un drift significatif peut indiquer que le modèle doit être ré-entraîné.
 """)
 
 # Features à analyser
-features = ['age', 'income', 'loan_amount', 'employment_length', 'credit_score']
+features = [
+    'ACTIVE_DAYS_CREDIT_ENDDATE_MIN',
+    'ACTIVE_DAYS_CREDIT_MAX',
+    'ACTIVE_DAYS_CREDIT_MEAN',
+    'ACTIVE_DAYS_CREDIT_UPDATE_MEAN',
+    'AMT_ANNUITY',
+    'AMT_CREDIT',
+    'AMT_GOODS_PRICE',
+    'ANNUITY_INCOME_PERC',
+    'APPROVED_APP_CREDIT_PERC_VAR',
+    'APPROVED_DAYS_DECISION_MAX',
+    'BURO_AMT_CREDIT_SUM_MEAN',
+    'BURO_DAYS_CREDIT_VAR',
+    'CLOSED_DAYS_CREDIT_MAX',
+    'DAYS_BIRTH',
+    'DAYS_EMPLOYED',
+    'DAYS_EMPLOYED_PERC',
+    'DAYS_ID_PUBLISH',
+    'DAYS_LAST_PHONE_CHANGE',
+    'DAYS_REGISTRATION',
+    'EXT_SOURCE_1',
+    'EXT_SOURCE_2',
+    'EXT_SOURCE_3',
+    'INCOME_CREDIT_PERC',
+    'INCOME_PER_PERSON',
+    'INSTAL_AMT_PAYMENT_MAX',
+    'INSTAL_AMT_PAYMENT_MIN',
+    'INSTAL_DAYS_ENTRY_PAYMENT_MAX',
+    'INSTAL_DAYS_ENTRY_PAYMENT_SUM',
+    'INSTAL_DBD_MAX',
+    'INSTAL_DBD_MEAN',
+    'INSTAL_DBD_SUM',
+    'PAYMENT_RATE',
+    'POS_MONTHS_BALANCE_MEAN',
+    'POS_NAME_CONTRACT_STATUS_Active_MEAN',
+    'POS_NAME_CONTRACT_STATUS_Completed_MEAN',
+    'PREV_APP_CREDIT_PERC_MEAN',
+    'PREV_APP_CREDIT_PERC_VAR',
+    'PREV_DAYS_DECISION_MAX',
+    'PREV_HOUR_APPR_PROCESS_START_MEAN',
+    'REGION_POPULATION_RELATIVE'
+]
 
 # Calculer le drift pour chaque feature
 drift_results = []
@@ -253,7 +281,7 @@ for feature in features:
                 'Feature': feature,
                 'KS Statistic': ks_stat,
                 'P-Value': p_value,
-                'Drift Détecté': '🔴 OUI' if p_value < 0.05 else '🟢 NON'
+                'Drift Détecté': '🔴 OUI' if p_value < 0 else '🟢 NON'
             })
 
 if drift_results:
@@ -261,7 +289,7 @@ if drift_results:
     st.dataframe(drift_df, use_container_width=True)
     
     # Alertes
-    drifted_features = [r['Feature'] for r in drift_results if r['P-Value'] < 0.05]
+    drifted_features = [r['Feature'] for r in drift_results if r['P-Value'] < 0]
     if drifted_features:
         st.error(f"⚠️ **ALERTE DRIFT**: Drift détecté sur {len(drifted_features)} feature(s): {', '.join(drifted_features)}")
         st.warning("💡 **Recommandation**: Considérez un ré-entraînement du modèle avec des données récentes.")
