@@ -1,15 +1,9 @@
-version: '3.8'
-
 services:
   api:
     build: .
     container_name: scoring-api
     ports:
       - "8000:8000"
-    volumes:
-      - ./logs:/app/logs
-      - ./output:/app/output
-      - ./models:/app/models
     environment:
       - PYTHONUNBUFFERED=1
     command: uvicorn api.main:app --host 0.0.0.0 --port 8000
@@ -25,13 +19,11 @@ services:
     container_name: scoring-monitoring
     ports:
       - "8501:8501"
-    volumes:
-      - ./logs:/app/logs
-      - ./output:/app/output
-      - ./models:/app/models
     environment:
       - PYTHONUNBUFFERED=1
-    command: streamlit run monitoring/app.py --server.host 0.0.0.0 --server.port 8501
+    command: streamlit run monitoring/app.py \
+      --server.port 8501 \
+      --server.address 0.0.0.0
     depends_on:
       api:
         condition: service_healthy

@@ -160,3 +160,9 @@ class HealthResponse(BaseModel):
                 "version": "1.0.0"
             }
         }
+
+class InsertData(BaseModel):
+    status: str
+    message: str
+    output: Optional[str] = None
+    error: Optional[str] = None

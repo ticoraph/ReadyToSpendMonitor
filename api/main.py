@@ -12,7 +12,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import pandas as pd
 import numpy as np
-from api.schemas import ClientData, PredictionResponse, HealthResponse
+import subprocess
+from api.schemas import ClientData, PredictionResponse, HealthResponse, InsertData
 
 # Configuration du logging
 logging.basicConfig(
@@ -187,6 +188,67 @@ async def health_check():
         version=MODEL_VERSION
     )
 
+@app.post("/insert-data", response_model=InsertData, tags=["Datas"])
+async def insert_predict_data():
+    """
+    Endpoint pour exécuter le script insert_predict_datas.py
+    """
+    try:
+        # Chemin du script
+        script_path = os.path.join(os.path.dirname(__file__), '../scripts', 'insert_predict_datas.py')
+        
+        # Exécuter le script
+        result = subprocess.run(
+            ['python', script_path],
+            capture_output=True,
+            text=True,
+            timeout=300  # 5 minutes timeout
+        )
+        
+        # Vérifier si l'exécution a réussi
+        if result.returncode == 0:
+            return InsertData(
+                status='success',
+                message='Les données de prédiction ont été insérées avec succès',
+                output=result.stdout
+            )
+        else:
+            raise HTTPException(
+                status_code=500,
+                detail={
+                    'status': 'error',
+                    'message': 'Erreur lors de l\'exécution du script',
+                    'error': result.stderr
+                }
+            )
+            
+    except subprocess.TimeoutExpired:
+        raise HTTPException(
+            status_code=504,
+            detail={
+                'status': 'error',
+                'message': 'Le script a dépassé le timeout (5 minutes)'
+            }
+        )
+    
+    except FileNotFoundError:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                'status': 'error',
+                'message': f'Script non trouvé'
+            }
+        )
+    
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail={
+                'status': 'error',
+                'message': 'Erreur serveur',
+                'error': str(e)
+            }
+        )
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
