@@ -506,7 +506,7 @@ def main():
         )
 
     # Récupération des 40 meilleures features
-    top_40_features = get_top_features(feat_importance, top_n=40)
+    top_40_features = sorted(get_top_features(feat_importance, top_n=40))
     print(f"Top 40 features: {top_40_features}")
 
     with timer("Run LightGBM with kfold"):

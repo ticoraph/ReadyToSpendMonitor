@@ -17,16 +17,6 @@ def setup_model():
     load_model()
 
 
-def test_read_root():
-    """
-    Test du endpoint racine
-    """
-    response = client.get("/")
-    assert response.status_code == 200
-    assert "message" in response.json()
-    assert "version" in response.json()
-
-
 def test_health_check():
     """
     Test du health check
@@ -44,12 +34,47 @@ def test_predict_valid_input():
     Test de prédiction avec des données valides
     """
     payload = {
-        "age": 35,
-        "income": 50000,
-        "loan_amount": 15000,
-        "employment_length": 5,
-        "credit_score": 720
-    }
+  "ACTIVE_DAYS_CREDIT_ENDDATE_MIN": 350,
+  "ACTIVE_DAYS_CREDIT_MAX": -17,
+  "ACTIVE_DAYS_CREDIT_MEAN": -17,
+  "ACTIVE_DAYS_CREDIT_UPDATE_MEAN": -17,
+  "AMT_ANNUITY": 21000,
+  "AMT_CREDIT": 296000,
+  "AMT_GOODS_PRICE": 225000,
+  "ANNUITY_INCOME_PERC": 0.12,
+  "APPROVED_APP_CREDIT_PERC_VAR": 0.01,
+  "APPROVED_DAYS_DECISION_MAX": -320,
+  "BURO_AMT_CREDIT_SUM_MEAN": 12400,
+  "BURO_DAYS_CREDIT_VAR": 0,
+  "CLOSED_DAYS_CREDIT_MAX": 0,
+  "DAYS_BIRTH": -13000,
+  "DAYS_EMPLOYED": -1000,
+  "DAYS_EMPLOYED_PERC": 0.07,
+  "DAYS_ID_PUBLISH": -4000,
+  "DAYS_LAST_PHONE_CHANGE": -300,
+  "DAYS_REGISTRATION": -5000,
+  "EXT_SOURCE_1": 0.34,
+  "EXT_SOURCE_2": 0.68,
+  "EXT_SOURCE_3": 0.26,
+  "INCOME_CREDIT_PERC": 0.6,
+  "INCOME_PER_PERSON": 90000,
+  "INSTAL_AMT_PAYMENT_MAX": 22500,
+  "INSTAL_AMT_PAYMENT_MIN": 37,
+  "INSTAL_DAYS_ENTRY_PAYMENT_MAX": -4,
+  "INSTAL_DAYS_ENTRY_PAYMENT_SUM": -6000,
+  "INSTAL_DBD_MAX": 20,
+  "INSTAL_DBD_MEAN": 4,
+  "INSTAL_DBD_SUM": 170,
+  "PAYMENT_RATE": 0.07,
+  "POS_MONTHS_BALANCE_MEAN": -6,
+  "POS_NAME_CONTRACT_STATUS_Active_MEAN": 0.9,
+  "POS_NAME_CONTRACT_STATUS_Completed_MEAN": 0.09,
+  "PREV_APP_CREDIT_PERC_MEAN": 0.93,
+  "PREV_APP_CREDIT_PERC_VAR": 0.01,
+  "PREV_DAYS_DECISION_MAX": -320,
+  "PREV_HOUR_APPR_PROCESS_START_MEAN": 20,
+  "REGION_POPULATION_RELATIVE": 0.03
+}
     
     response = client.post("/predict", json=payload)
     assert response.status_code == 200
@@ -73,12 +98,47 @@ def test_predict_invalid_age():
     Test avec un âge invalide (trop jeune)
     """
     payload = {
-        "age": 15,  # Mineur
-        "income": 50000,
-        "loan_amount": 15000,
-        "employment_length": 5,
-        "credit_score": 720
-    }
+  "ACTIVE_DAYS_CREDIT_ENDDATE_MIN": 350,
+  "ACTIVE_DAYS_CREDIT_MAX": -17,
+  "ACTIVE_DAYS_CREDIT_MEAN": -17,
+  "ACTIVE_DAYS_CREDIT_UPDATE_MEAN": -17,
+  "AMT_ANNUITY": 21000,
+  "AMT_CREDIT": 296000,
+  "AMT_GOODS_PRICE": 225000,
+  "ANNUITY_INCOME_PERC": 0.12,
+  "APPROVED_APP_CREDIT_PERC_VAR": 0.01,
+  "APPROVED_DAYS_DECISION_MAX": -320,
+  "BURO_AMT_CREDIT_SUM_MEAN": 12400,
+  "BURO_DAYS_CREDIT_VAR": 0,
+  "CLOSED_DAYS_CREDIT_MAX": 0,
+  "DAYS_BIRTH": -5400,  # trop jeune
+  "DAYS_EMPLOYED": -1000,
+  "DAYS_EMPLOYED_PERC": 0.07,
+  "DAYS_ID_PUBLISH": -4000,
+  "DAYS_LAST_PHONE_CHANGE": -300,
+  "DAYS_REGISTRATION": -5000,
+  "EXT_SOURCE_1": 0.34,
+  "EXT_SOURCE_2": 0.68,
+  "EXT_SOURCE_3": 0.26,
+  "INCOME_CREDIT_PERC": 0.6,
+  "INCOME_PER_PERSON": 90000,
+  "INSTAL_AMT_PAYMENT_MAX": 22500,
+  "INSTAL_AMT_PAYMENT_MIN": 37,
+  "INSTAL_DAYS_ENTRY_PAYMENT_MAX": -4,
+  "INSTAL_DAYS_ENTRY_PAYMENT_SUM": -6000,
+  "INSTAL_DBD_MAX": 20,
+  "INSTAL_DBD_MEAN": 4,
+  "INSTAL_DBD_SUM": 170,
+  "PAYMENT_RATE": 0.07,
+  "POS_MONTHS_BALANCE_MEAN": -6,
+  "POS_NAME_CONTRACT_STATUS_Active_MEAN": 0.9,
+  "POS_NAME_CONTRACT_STATUS_Completed_MEAN": 0.09,
+  "PREV_APP_CREDIT_PERC_MEAN": 0.93,
+  "PREV_APP_CREDIT_PERC_VAR": 0.01,
+  "PREV_DAYS_DECISION_MAX": -320,
+  "PREV_HOUR_APPR_PROCESS_START_MEAN": 20,
+  "REGION_POPULATION_RELATIVE": 0.03
+}
     
     response = client.post("/predict", json=payload)
     assert response.status_code == 422  # Validation error
@@ -89,12 +149,47 @@ def test_predict_negative_income():
     Test avec un revenu négatif
     """
     payload = {
-        "age": 35,
-        "income": -10000,  # Négatif
-        "loan_amount": 15000,
-        "employment_length": 5,
-        "credit_score": 720
-    }
+  "ACTIVE_DAYS_CREDIT_ENDDATE_MIN": 350,
+  "ACTIVE_DAYS_CREDIT_MAX": -17,
+  "ACTIVE_DAYS_CREDIT_MEAN": -17,
+  "ACTIVE_DAYS_CREDIT_UPDATE_MEAN": -17,
+  "AMT_ANNUITY": 21000,
+  "AMT_CREDIT": 296000,
+  "AMT_GOODS_PRICE": 225000,
+  "ANNUITY_INCOME_PERC": 0.12,
+  "APPROVED_APP_CREDIT_PERC_VAR": 0.01,
+  "APPROVED_DAYS_DECISION_MAX": -320,
+  "BURO_AMT_CREDIT_SUM_MEAN": 12400,
+  "BURO_DAYS_CREDIT_VAR": 0,
+  "CLOSED_DAYS_CREDIT_MAX": 0,
+  "DAYS_BIRTH": -10000,
+  "DAYS_EMPLOYED": -1000,
+  "DAYS_EMPLOYED_PERC": 0.07,
+  "DAYS_ID_PUBLISH": -4000,
+  "DAYS_LAST_PHONE_CHANGE": -300,
+  "DAYS_REGISTRATION": -5000,
+  "EXT_SOURCE_1": 0.34,
+  "EXT_SOURCE_2": 0.68,
+  "EXT_SOURCE_3": 0.26,
+  "INCOME_CREDIT_PERC": 0.6,
+  "INCOME_PER_PERSON": -90000,  # revenu négatif
+  "INSTAL_AMT_PAYMENT_MAX": 22500,
+  "INSTAL_AMT_PAYMENT_MIN": 37,
+  "INSTAL_DAYS_ENTRY_PAYMENT_MAX": -4,
+  "INSTAL_DAYS_ENTRY_PAYMENT_SUM": -6000,
+  "INSTAL_DBD_MAX": 20,
+  "INSTAL_DBD_MEAN": 4,
+  "INSTAL_DBD_SUM": 170,
+  "PAYMENT_RATE": 0.07,
+  "POS_MONTHS_BALANCE_MEAN": -6,
+  "POS_NAME_CONTRACT_STATUS_Active_MEAN": 0.9,
+  "POS_NAME_CONTRACT_STATUS_Completed_MEAN": 0.09,
+  "PREV_APP_CREDIT_PERC_MEAN": 0.93,
+  "PREV_APP_CREDIT_PERC_VAR": 0.01,
+  "PREV_DAYS_DECISION_MAX": -320,
+  "PREV_HOUR_APPR_PROCESS_START_MEAN": 20,
+  "REGION_POPULATION_RELATIVE": 0.03
+}
     
     response = client.post("/predict", json=payload)
     assert response.status_code == 422  # Validation error
@@ -105,28 +200,47 @@ def test_predict_missing_field():
     Test avec un champ manquant
     """
     payload = {
-        "age": 35,
-        "income": 50000,
-        # loan_amount manquant
-        "employment_length": 5,
-        "credit_score": 720
-    }
-    
-    response = client.post("/predict", json=payload)
-    assert response.status_code == 422  # Validation error
-
-
-def test_predict_invalid_credit_score():
-    """
-    Test avec un score de crédit hors limites
-    """
-    payload = {
-        "age": 35,
-        "income": 50000,
-        "loan_amount": 15000,
-        "employment_length": 5,
-        "credit_score": 1000  # Trop élevé (max 850)
-    }
+  "ACTIVE_DAYS_CREDIT_ENDDATE_MIN": 350,
+  "ACTIVE_DAYS_CREDIT_MAX": -17,
+  #"ACTIVE_DAYS_CREDIT_MEAN": -17,
+  "ACTIVE_DAYS_CREDIT_UPDATE_MEAN": -17,
+  "AMT_ANNUITY": 21000,
+  "AMT_CREDIT": 296000,
+  "AMT_GOODS_PRICE": 225000,
+  "ANNUITY_INCOME_PERC": 0.12,
+  "APPROVED_APP_CREDIT_PERC_VAR": 0.01,
+  "APPROVED_DAYS_DECISION_MAX": -320,
+  "BURO_AMT_CREDIT_SUM_MEAN": 12400,
+  "BURO_DAYS_CREDIT_VAR": 0,
+  "CLOSED_DAYS_CREDIT_MAX": 0,
+  "DAYS_BIRTH": -10000,
+  "DAYS_EMPLOYED": -1000,
+  "DAYS_EMPLOYED_PERC": 0.07,
+  "DAYS_ID_PUBLISH": -4000,
+  "DAYS_LAST_PHONE_CHANGE": -300,
+  "DAYS_REGISTRATION": -5000,
+  "EXT_SOURCE_1": 0.34,
+  "EXT_SOURCE_2": 0.68,
+  "EXT_SOURCE_3": 0.26,
+  "INCOME_CREDIT_PERC": 0.6,
+  "INCOME_PER_PERSON": 90000,  
+  "INSTAL_AMT_PAYMENT_MAX": 22500,
+  "INSTAL_AMT_PAYMENT_MIN": 37,
+  "INSTAL_DAYS_ENTRY_PAYMENT_MAX": -4,
+  "INSTAL_DAYS_ENTRY_PAYMENT_SUM": -6000,
+  "INSTAL_DBD_MAX": 20,
+  "INSTAL_DBD_MEAN": 4,
+  "INSTAL_DBD_SUM": 170,
+  "PAYMENT_RATE": 0.07,
+  "POS_MONTHS_BALANCE_MEAN": -6,
+  "POS_NAME_CONTRACT_STATUS_Active_MEAN": 0.9,
+  "POS_NAME_CONTRACT_STATUS_Completed_MEAN": 0.09,
+  "PREV_APP_CREDIT_PERC_MEAN": 0.93,
+  "PREV_APP_CREDIT_PERC_VAR": 0.01,
+  "PREV_DAYS_DECISION_MAX": -320,
+  "PREV_HOUR_APPR_PROCESS_START_MEAN": 20,
+  "REGION_POPULATION_RELATIVE": 0.03
+}
     
     response = client.post("/predict", json=payload)
     assert response.status_code == 422  # Validation error
@@ -137,43 +251,51 @@ def test_predict_multiple_requests():
     Test de plusieurs prédictions successives (charge)
     """
     payload = {
-        "age": 35,
-        "income": 50000,
-        "loan_amount": 15000,
-        "employment_length": 5,
-        "credit_score": 720
-    }
+  "ACTIVE_DAYS_CREDIT_ENDDATE_MIN": 350,
+  "ACTIVE_DAYS_CREDIT_MAX": -17,
+  "ACTIVE_DAYS_CREDIT_MEAN": -17,
+  "ACTIVE_DAYS_CREDIT_UPDATE_MEAN": -17,
+  "AMT_ANNUITY": 21000,
+  "AMT_CREDIT": 296000,
+  "AMT_GOODS_PRICE": 225000,
+  "ANNUITY_INCOME_PERC": 0.12,
+  "APPROVED_APP_CREDIT_PERC_VAR": 0.01,
+  "APPROVED_DAYS_DECISION_MAX": -320,
+  "BURO_AMT_CREDIT_SUM_MEAN": 12400,
+  "BURO_DAYS_CREDIT_VAR": 0,
+  "CLOSED_DAYS_CREDIT_MAX": 0,
+  "DAYS_BIRTH": -10000,
+  "DAYS_EMPLOYED": -1000,
+  "DAYS_EMPLOYED_PERC": 0.07,
+  "DAYS_ID_PUBLISH": -4000,
+  "DAYS_LAST_PHONE_CHANGE": -300,
+  "DAYS_REGISTRATION": -5000,
+  "EXT_SOURCE_1": 0.34,
+  "EXT_SOURCE_2": 0.68,
+  "EXT_SOURCE_3": 0.26,
+  "INCOME_CREDIT_PERC": 0.6,
+  "INCOME_PER_PERSON": 90000,  
+  "INSTAL_AMT_PAYMENT_MAX": 22500,
+  "INSTAL_AMT_PAYMENT_MIN": 37,
+  "INSTAL_DAYS_ENTRY_PAYMENT_MAX": -4,
+  "INSTAL_DAYS_ENTRY_PAYMENT_SUM": -6000,
+  "INSTAL_DBD_MAX": 20,
+  "INSTAL_DBD_MEAN": 4,
+  "INSTAL_DBD_SUM": 170,
+  "PAYMENT_RATE": 0.07,
+  "POS_MONTHS_BALANCE_MEAN": -6,
+  "POS_NAME_CONTRACT_STATUS_Active_MEAN": 0.9,
+  "POS_NAME_CONTRACT_STATUS_Completed_MEAN": 0.09,
+  "PREV_APP_CREDIT_PERC_MEAN": 0.93,
+  "PREV_APP_CREDIT_PERC_VAR": 0.01,
+  "PREV_DAYS_DECISION_MAX": -320,
+  "PREV_HOUR_APPR_PROCESS_START_MEAN": 20,
+  "REGION_POPULATION_RELATIVE": 0.03
+}
     
     for _ in range(10):
         response = client.post("/predict", json=payload)
         assert response.status_code == 200
-
-
-def test_predict_edge_cases():
-    """
-    Test des cas limites
-    """
-    # Âge minimum
-    payload_min = {
-        "age": 18,
-        "income": 1,
-        "loan_amount": 1,
-        "employment_length": 0,
-        "credit_score": 300
-    }
-    response = client.post("/predict", json=payload_min)
-    assert response.status_code == 200
-    
-    # Âge maximum
-    payload_max = {
-        "age": 100,
-        "income": 1000000,
-        "loan_amount": 500000,
-        "employment_length": 50,
-        "credit_score": 850
-    }
-    response = client.post("/predict", json=payload_max)
-    assert response.status_code == 200
 
 
 def test_api_response_time():
@@ -183,12 +305,47 @@ def test_api_response_time():
     import time
     
     payload = {
-        "age": 35,
-        "income": 50000,
-        "loan_amount": 15000,
-        "employment_length": 5,
-        "credit_score": 720
-    }
+  "ACTIVE_DAYS_CREDIT_ENDDATE_MIN": 350,
+  "ACTIVE_DAYS_CREDIT_MAX": -17,
+  "ACTIVE_DAYS_CREDIT_MEAN": -17,
+  "ACTIVE_DAYS_CREDIT_UPDATE_MEAN": -17,
+  "AMT_ANNUITY": 21000,
+  "AMT_CREDIT": 296000,
+  "AMT_GOODS_PRICE": 225000,
+  "ANNUITY_INCOME_PERC": 0.12,
+  "APPROVED_APP_CREDIT_PERC_VAR": 0.01,
+  "APPROVED_DAYS_DECISION_MAX": -320,
+  "BURO_AMT_CREDIT_SUM_MEAN": 12400,
+  "BURO_DAYS_CREDIT_VAR": 0,
+  "CLOSED_DAYS_CREDIT_MAX": 0,
+  "DAYS_BIRTH": -13000,
+  "DAYS_EMPLOYED": -1000,
+  "DAYS_EMPLOYED_PERC": 0.07,
+  "DAYS_ID_PUBLISH": -4000,
+  "DAYS_LAST_PHONE_CHANGE": -300,
+  "DAYS_REGISTRATION": -5000,
+  "EXT_SOURCE_1": 0.34,
+  "EXT_SOURCE_2": 0.68,
+  "EXT_SOURCE_3": 0.26,
+  "INCOME_CREDIT_PERC": 0.6,
+  "INCOME_PER_PERSON": 90000,  
+  "INSTAL_AMT_PAYMENT_MAX": 22500,
+  "INSTAL_AMT_PAYMENT_MIN": 37,
+  "INSTAL_DAYS_ENTRY_PAYMENT_MAX": -4,
+  "INSTAL_DAYS_ENTRY_PAYMENT_SUM": -6000,
+  "INSTAL_DBD_MAX": 20,
+  "INSTAL_DBD_MEAN": 4,
+  "INSTAL_DBD_SUM": 170,
+  "PAYMENT_RATE": 0.07,
+  "POS_MONTHS_BALANCE_MEAN": -6,
+  "POS_NAME_CONTRACT_STATUS_Active_MEAN": 0.9,
+  "POS_NAME_CONTRACT_STATUS_Completed_MEAN": 0.09,
+  "PREV_APP_CREDIT_PERC_MEAN": 0.93,
+  "PREV_APP_CREDIT_PERC_VAR": 0.01,
+  "PREV_DAYS_DECISION_MAX": -320,
+  "PREV_HOUR_APPR_PROCESS_START_MEAN": 20,
+  "REGION_POPULATION_RELATIVE": 0.03
+}
     
     start = time.time()
     response = client.post("/predict", json=payload)

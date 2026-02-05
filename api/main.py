@@ -40,7 +40,7 @@ app.add_middleware(
 # Variables globales pour le modèle
 MODEL = None
 MODEL_VERSION = "1.0.0"
-LOGS_FILE = "production_logs.json"
+LOGS_FILE = "logs/production_logs.json"
 
 
 def load_model():
@@ -100,7 +100,7 @@ async def startup_event():
     load_model()
     logger.info("✅ API prête à recevoir des requêtes")
 
-
+'''
 @app.get("/", tags=["Root"])
 async def root():
     """
@@ -112,19 +112,7 @@ async def root():
         "documentation": "/docs",
         "health": "/health"
     }
-
-
-@app.get("/health", response_model=HealthResponse, tags=["Health"])
-async def health_check():
-    """
-    Vérifie l'état de santé de l'API
-    """
-    return HealthResponse(
-        status="healthy" if MODEL is not None else "unhealthy",
-        model_loaded=MODEL is not None,
-        version=MODEL_VERSION
-    )
-
+'''
 
 @app.post("/predict", response_model=PredictionResponse, tags=["Prediction"])
 async def predict(client_data: ClientData, request: Request):
@@ -186,6 +174,18 @@ async def predict(client_data: ClientData, request: Request):
     except Exception as e:
         logger.error(f"❌ Erreur lors de la prédiction: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Erreur de prédiction: {str(e)}")
+
+
+@app.get("/health", response_model=HealthResponse, tags=["Health"])
+async def health_check():
+    """
+    Vérifie l'état de santé de l'API
+    """
+    return HealthResponse(
+        status="healthy" if MODEL is not None else "unhealthy",
+        model_loaded=MODEL is not None,
+        version=MODEL_VERSION
+    )
 
 
 @app.exception_handler(Exception)
