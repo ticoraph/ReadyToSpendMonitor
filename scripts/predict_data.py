@@ -7,7 +7,7 @@ sauvegardés pour faire des prédictions sur de nouvelles données.
 
 import pandas as pd
 import numpy as np
-from lightgbm_with_simple_features import (
+from scripts.train_model import (
     load_model, 
     predict_with_model,
     application_train_test,

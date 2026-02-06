@@ -14,25 +14,25 @@ Projet de mise en production d'un modèle de scoring de crédit pour l'entrepris
 ## 🏗️ Architecture du Projet
 
 ```
-pret-a-depenser-mlops/
+ReadyToSpendMonitor/
 ├── api/                    # Code de l'API FastAPI
 │   ├── main.py            # Point d'entrée de l'API
 │   └── schemas.py         # Schémas de validation
 ├── models/                 # Modèles ML et artefacts
 │   └── model.pkl          # Modèle entraîné (à ajouter)
-├── data/                   # Données de référence
-│   └── reference_data.csv # Données d'entraînement (à ajouter)
 ├── monitoring/            # Dashboard de monitoring
 │   └── app.py            # Application Streamlit
 ├── tests/                 # Tests unitaires
 │   └── test_api.py       # Tests de l'API
+│   └── test_app.py       # Tests de l'APP monitoring
 ├── notebooks/             # Notebooks d'analyse
 │   └── drift_analysis.ipynb
 ├── scripts/               # Scripts utilitaires
 │   └── train_model.py    # Entraînement du modèle
 ├── .github/workflows/     # CI/CD
-│   └── deploy.yml        # Pipeline GitHub Actions
+│   └── ci-cd.yml        # Pipeline GitHub Actions
 ├── Dockerfile            # Configuration Docker
+├── docker-compose.yaml    # Configuration Docker compose
 ├── requirements.txt      # Dépendances Python
 └── .gitignore           # Fichiers à ignorer
 ```
@@ -40,29 +40,24 @@ pret-a-depenser-mlops/
 ## 🚀 Installation et Lancement
 
 ### Prérequis
-- Python 3.9+
-- Docker (optionnel)
+- Python 3.10+
+- Docker
 - Git
 
 ### Installation Locale
 
 ```bash
 # Cloner le repository
-git clone https://github.com/votre-username/pret-a-depenser-mlops.git
-cd pret-a-depenser-mlops
+git clone https://github.com/ticoraph/ReadyToSpendMonitor.git
+cd ReadyToSpendMonitor
 
 # Créer un environnement virtuel
-python -m venv venv
-source venv/bin/activate  # Linux/Mac
-# ou
-venv\Scripts\activate  # Windows
-
-# Installer les dépendances
+python3.10 -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
 
 # Ajouter vos données et modèle
 # - Copier votre modèle dans models/model.pkl
-# - Copier vos données dans data/reference_data.csv
 ```
 
 ### Lancement de l'API
@@ -71,23 +66,8 @@ pip install -r requirements.txt
 # Méthode 1 : Uvicorn
 uvicorn api.main:app --reload --host 0.0.0.0 --port 8000
 
-# Méthode 2 : Python
-python -m api.main
-
 # L'API sera accessible sur http://localhost:8000
 # Documentation interactive : http://localhost:8000/docs
-```
-
-### Lancement avec Docker
-
-```bash
-# Construire l'image
-docker build -t scoring-api .
-
-# Lancer le conteneur
-docker run -p 8000:8000 scoring-api
-
-# L'API sera accessible sur http://localhost:8000
 ```
 
 ### Lancement du Dashboard de Monitoring
@@ -99,6 +79,14 @@ streamlit run monitoring/app.py
 # Le dashboard sera accessible sur http://localhost:8501
 ```
 
+### Lancement avec Docker
+
+```bash
+# Construire l'image
+docker compose up
+
+```
+
 ## 📊 Utilisation de l'API
 
 ### Exemple de requête avec curl
@@ -107,11 +95,6 @@ streamlit run monitoring/app.py
 curl -X POST "http://localhost:8000/predict" \
   -H "Content-Type: application/json" \
   -d '{
-    "age": 35,
-    "income": 50000,
-    "loan_amount": 15000,
-    "employment_length": 5,
-    "credit_score": 720
   }'
 ```
 
@@ -119,17 +102,11 @@ curl -X POST "http://localhost:8000/predict" \
 
 ```json
 {
-  "client_id": "auto_generated",
-  "score": 0.78,
-  "decision": "APPROVED",
-  "confidence": 0.85,
-  "inference_time_ms": 15.3
 }
 ```
 
 ### Points de terminaison disponibles
 
-- `GET /` : Page d'accueil
 - `GET /health` : Vérification de santé de l'API
 - `POST /predict` : Prédiction de score
 - `GET /docs` : Documentation Swagger interactive
@@ -141,7 +118,7 @@ curl -X POST "http://localhost:8000/predict" \
 pytest tests/ -v
 
 # Lancer avec couverture
-pytest tests/ --cov=api --cov-report=html
+pytest tests/ --cov-report=html
 ```
 
 ## 📈 Monitoring
@@ -170,7 +147,7 @@ Le pipeline GitHub Actions s'exécute automatiquement à chaque push sur `main` 
 1. ✅ Installation des dépendances
 2. ✅ Exécution des tests unitaires
 3. ✅ Construction de l'image Docker
-4. ✅ Déploiement sur Hugging Face Spaces (optionnel)
+4. ✅ Déploiement sur Hugging Face Spaces 
 
 ### Configuration requise
 
@@ -200,11 +177,11 @@ Le notebook `notebooks/drift_analysis.ipynb` contient :
 
 ## ⚡ Optimisations Implémentées
 
-1. **Chargement du modèle au démarrage** (pas à chaque requête)
+1. **Chargement du modèle au démarrage**
 2. **Validation des entrées** avec Pydantic
 3. **Logging structuré** en JSON
 4. **Gestion d'erreurs robuste**
-5. **Cache des prédictions** (optionnel)
+5. **Cache des prédictions**
 
 ## 📝 Structure des Logs
 
@@ -238,12 +215,10 @@ MIT License
 
 ## 👤 Auteur
 
-Votre Nom - Data Scientist @ Prêt à Dépenser (Projet Académique)
+Raphaël Montico - Data Scientist @ Prêt à Dépenser (Projet Académique)
 
 ## 🙏 Remerciements
 
-- Chloé Dubois (Lead Data Scientist)
-- Équipe Crédit Express
 - OpenClassrooms
 
 ---
