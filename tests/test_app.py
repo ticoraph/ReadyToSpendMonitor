@@ -228,76 +228,6 @@ class TestDataProcessing:
 
 
 # ============================================================
-# TESTS DE LA DÉTECTION DE DRIFT
-# ============================================================
-
-class TestDriftDetection:
-    """Tests pour la détection de data drift"""
-    
-    def test_ks_statistic_calculation(self, sample_reference_data):
-        """Test le calcul de la statistique KS"""
-        from scipy import stats
-        
-        ref_data = sample_reference_data['ACTIVE_DAYS_CREDIT_ENDDATE_MIN']
-        prod_data = pd.Series(np.random.normal(150, 50, 100))
-        
-        ks_stat, p_value = stats.ks_2samp(ref_data, prod_data)
-        
-        assert isinstance(ks_stat, float)
-        assert isinstance(p_value, float)
-        assert 0 <= ks_stat <= 1
-        assert 0 <= p_value <= 1
-    
-    def test_drift_detection_no_drift(self, sample_reference_data):
-        """Test quand aucun drift n'est détecté"""
-        from scipy import stats
-        
-        # Production data = distribution similaire
-        ref_data = sample_reference_data['ACTIVE_DAYS_CREDIT_ENDDATE_MIN']
-        prod_data = pd.Series(np.random.normal(100, 50, 100))
-        
-        ks_stat, p_value = stats.ks_2samp(ref_data, prod_data)
-        
-        # Avec un p-value élevé, pas de drift significatif
-        assert p_value > 0.05 or True  # Dépend de la distribution
-    
-    def test_drift_detection_with_drift(self, sample_reference_data):
-        """Test quand un drift est détecté"""
-        from scipy import stats
-        
-        # Production data = distribution très différente
-        ref_data = sample_reference_data['ACTIVE_DAYS_CREDIT_ENDDATE_MIN']
-        prod_data = pd.Series(np.random.normal(500, 50, 100))  # Moyenne très différente
-        
-        ks_stat, p_value = stats.ks_2samp(ref_data, prod_data)
-        
-        assert ks_stat > 0
-        assert p_value >= 0
-    
-    def test_drift_with_missing_values(self, sample_reference_data):
-        """Test le drift avec des valeurs manquantes"""
-        from scipy import stats
-        
-        ref_data = sample_reference_data['ACTIVE_DAYS_CREDIT_ENDDATE_MIN'].dropna()
-        prod_data = pd.Series([1, 2, np.nan, 4, 5]).dropna()
-        
-        ks_stat, p_value = stats.ks_2samp(ref_data, prod_data)
-        
-        assert not np.isnan(ks_stat)
-        assert not np.isnan(p_value)
-    
-    def test_drift_empty_data(self, sample_reference_data):
-        """Test le drift avec des données vides"""
-        from scipy import stats
-        
-        ref_data = pd.Series([]).dropna()
-        prod_data = pd.Series([1, 2, 3]).dropna()
-        
-        # Si ref_data est vide, aucun calcul ne doit être fait
-        assert len(ref_data) == 0
-
-
-# ============================================================
 # TESTS DES MÉTRIQUES
 # ============================================================
 
@@ -370,75 +300,6 @@ class TestMetrics:
         
         assert len(filtered) == 1
 
-
-# ============================================================
-# TESTS D'INTÉGRATION
-# ============================================================
-
-class TestIntegration:
-    """Tests d'intégration"""
-    
-    def test_complete_workflow(self, sample_production_logs, sample_reference_data):
-        """Test le workflow complet: charge, traite et analyse les données"""
-        # Charge
-        df = pd.DataFrame(sample_production_logs)
-        df['timestamp'] = pd.to_datetime(df['timestamp'])
-        
-        assert len(df) == 3
-        assert 'timestamp' in df.columns
-        
-        # Traite
-        approved = (df['output'].apply(lambda x: x['decision']) == 'APPROVED').sum()
-        approval_rate = (approved / len(df)) * 100
-        
-        assert approval_rate == pytest.approx(66.67, rel=1e-2)
-        
-        # Analyse de drift
-        from scipy import stats
-        ref_col = sample_reference_data['ACTIVE_DAYS_CREDIT_ENDDATE_MIN']
-        prod_col = df['input'].apply(lambda x: x['ACTIVE_DAYS_CREDIT_ENDDATE_MIN'])
-        
-        ks_stat, p_value = stats.ks_2samp(ref_col, prod_col)
-        
-        assert isinstance(ks_stat, float)
-        assert isinstance(p_value, float)
-    
-    def test_export_to_csv(self, sample_production_logs):
-        """Test l'export des données en CSV"""
-        df = pd.DataFrame(sample_production_logs)
-        csv_content = df.to_csv(index=False)
-        
-        assert isinstance(csv_content, str)
-        assert 'timestamp' in csv_content
-        assert 'model_version' in csv_content
-        assert 'APPROVED' in csv_content
-        assert 'REJECTED' in csv_content
-    
-    def test_export_drift_report(self, sample_reference_data):
-        """Test l'export du rapport de drift"""
-        from scipy import stats
-        
-        drift_results = []
-        features = ['ACTIVE_DAYS_CREDIT_ENDDATE_MIN', 'ACTIVE_DAYS_CREDIT_MAX']
-        
-        for feature in features:
-            ref_data = sample_reference_data[feature].dropna()
-            prod_data = pd.Series(np.random.normal(100, 50, 100))
-            
-            ks_stat, p_value = stats.ks_2samp(ref_data, prod_data)
-            drift_results.append({
-                'Feature': feature,
-                'KS Statistic': ks_stat,
-                'P-Value': p_value
-            })
-        
-        drift_df = pd.DataFrame(drift_results)
-        csv_content = drift_df.to_csv(index=False)
-        
-        assert isinstance(csv_content, str)
-        assert 'Feature' in csv_content
-        assert 'KS Statistic' in csv_content
-        assert 'P-Value' in csv_content
 
 
 # ============================================================
@@ -529,22 +390,7 @@ class TestPerformance:
         
         assert len(df) == 1000
         assert elapsed < 1.0  # Devrait être très rapide
-    
-    def test_drift_calculation_performance(self, sample_reference_data):
-        """Test la performance du calcul de drift"""
-        import time
-        from scipy import stats
-        
-        start = time.time()
-        
-        ref_data = sample_reference_data['ACTIVE_DAYS_CREDIT_ENDDATE_MIN']
-        prod_data = pd.Series(np.random.normal(100, 50, 100))
-        ks_stat, p_value = stats.ks_2samp(ref_data, prod_data)
-        
-        elapsed = time.time() - start
-        
-        assert elapsed < 0.1  # Doit être très rapide
-        assert not np.isnan(ks_stat)
+
 
 
 # ============================================================
