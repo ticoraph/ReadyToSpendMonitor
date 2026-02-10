@@ -10,50 +10,7 @@ import numpy as np
 from scripts.train_model import (
     load_model, 
     predict_with_model,
-    application_train_test,
-    bureau_and_balance,
-    previous_applications,
-    pos_cash,
-    installments_payments,
-    credit_card_balance,
-    clean_column_names
 )
-
-def prepare_features_for_prediction(num_rows=None):
-    """
-    Prépare les features exactement de la même manière que lors de l'entraînement
-    
-    Returns:
-    --------
-    pandas DataFrame : DataFrame avec toutes les features nécessaires
-    """
-    # Charger et préparer les données de la même façon que pendant l'entraînement
-    df = application_train_test()
-    
-    bureau = bureau_and_balance(num_rows)
-    df = df.join(bureau, how='left', on='SK_ID_CURR')
-    del bureau
-    
-    prev = previous_applications()
-    df = df.join(prev, how='left', on='SK_ID_CURR')
-    del prev
-    
-    pos = pos_cash()
-    df = df.join(pos, how='left', on='SK_ID_CURR')
-    del pos
-    
-    ins = installments_payments()
-    df = df.join(ins, how='left', on='SK_ID_CURR')
-    del ins
-    
-    cc = credit_card_balance()
-    df = df.join(cc, how='left', on='SK_ID_CURR')
-    del cc
-    
-    # Nettoyer les noms de colonnes
-    df = clean_column_names(df)
-    
-    return df
 
 
 def main_predict():
@@ -71,11 +28,15 @@ def main_predict():
     print("PRÉPARATION DES DONNÉES")
     print("=" * 80)
     
-    # Préparer les données (ici on utilise les données de test)
-    df = prepare_features_for_prediction()
+    # Préparer les données 
+    test_df = pd.read_csv('output/dataset_test_top40.csv') 
     
+    # Grouper par TARGET et prendre 10% de chaque groupe
+    #df_test_10 = test_df.groupby('TARGET', group_keys=False).apply(
+    #    lambda x: x.sample(frac=0.10, random_state=42))
+    #test_df = df_test_10
+
     # Filtrer uniquement les données de test (TARGET est null)
-    test_df = df[df['TARGET'].isnull()].copy()
     print(f"\nNombre d'observations à prédire: {len(test_df)}")
     
     print("\n" + "=" * 80)
@@ -92,6 +53,30 @@ def main_predict():
     print(f"  - Moyenne: {predictions.mean():.6f}")
     print(f"  - Médiane: {np.median(predictions):.6f}")
     
+    # Compter les prédictions au-dessus et au-dessous de 0.5
+    print(f"\n" + "=" * 80)
+    print("COMPTAGE DES PRÉDICTIONS (seuil 0.2)")
+    print("=" * 80)
+    
+    count_below = (predictions <= 0.2).sum()
+    count_above = (predictions > 0.2).sum()
+    total = len(predictions)
+    
+    print(f"\nPrédictions ≤ 0.2 (classe 0) : {count_below} ({count_below/total*100:.2f}%)")
+    print(f"Prédictions > 0.2  (classe 1) : {count_above} ({count_above/total*100:.2f}%)")
+    print(f"Total                         : {total}")
+    
+    # Tableau récapitulatif
+    summary_data = {
+        'Classe': ['0 (≤ 0.2)', '1 (> 0.2)'],
+        'Count': [count_below, count_above],
+        'Percentage (%)': [round(count_below/total*100, 2), round(count_above/total*100, 2)]
+    }
+    summary_df = pd.DataFrame(summary_data)
+    print("\n")
+    print(summary_df.to_string(index=False))
+
+
     # Créer un DataFrame de soumission
     submission = pd.DataFrame({
         'SK_ID_CURR': test_df['SK_ID_CURR'],
@@ -110,25 +95,6 @@ def main_predict():
     print(submission.head(10))
     
     return submission
-
-
-def predict_single_customer(customer_data, model_data):
-    """
-    Faire une prédiction pour un seul client
-    
-    Parameters:
-    -----------
-    customer_data : pandas DataFrame
-        DataFrame avec les features d'un seul client (1 ligne)
-    model_data : dict
-        Données du modèle chargées avec load_model_ensemble()
-    
-    Returns:
-    --------
-    float : Probabilité de défaut de paiement
-    """
-    prediction = predict_with_ensemble(model_data, customer_data)
-    return prediction[0]
 
 
 if __name__ == "__main__":

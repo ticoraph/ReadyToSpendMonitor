@@ -67,7 +67,7 @@ def load_reference_data():
     """
     Charge les données de référence (entraînement)
     """
-    ref_file = "output/dataset_train_top40_clean.csv"
+    ref_file = "output/dataset_train_top40.csv"
     
     try:
         return pd.read_csv(ref_file)

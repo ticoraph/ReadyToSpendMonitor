@@ -28,6 +28,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import warnings
 from sklearn.model_selection import train_test_split
+from sklearn.metrics import f1_score
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
@@ -46,12 +47,29 @@ def one_hot_encoder(df, nan_as_category = True):
     return df, new_columns
 
 # Preprocess application_train.csv and application_test.csv
-def application_train_test(num_rows = None, nan_as_category = False):
+def application_train(num_rows = None, nan_as_category = False):
     # Read data and merge
     df = pd.read_csv('input/application_train.csv', nrows= num_rows)
-    test_df = pd.read_csv('input/application_test.csv', nrows= num_rows)
-    print("Train samples: {}, test samples: {}".format(len(df), len(test_df)))
-    df = pd.concat([df, test_df], ignore_index=True)
+    #test_df = pd.read_csv('input/application_test.csv', nrows= num_rows)
+
+    # Grouper par TARGET et prendre 20% de chaque groupe
+    df_train_30 = df.groupby('TARGET', group_keys=False).apply(
+        lambda x: x.sample(frac=0.30, random_state=42)
+    )
+
+    # Le reste va au test
+    df_test_70 = df.drop(df_train_30.index)
+
+    # Sauvegarder
+    df_train_30.to_csv('output/application_train_30percent.csv', index=False)
+    df_test_70.to_csv('output/application_test_70percent.csv', index=False)
+
+    df = df_train_30
+
+    print("Train samples: {}".format(len(df)))
+    print(df['TARGET'].value_counts())
+
+    #df = pd.concat([df, test_df], ignore_index=True)
     # Optional: Remove 4 applications with XNA CODE_GENDER (train set)
     df = df[df['CODE_GENDER'] != 'XNA']
     
@@ -69,7 +87,7 @@ def application_train_test(num_rows = None, nan_as_category = False):
     df['INCOME_PER_PERSON'] = df['AMT_INCOME_TOTAL'] / df['CNT_FAM_MEMBERS']
     df['ANNUITY_INCOME_PERC'] = df['AMT_ANNUITY'] / df['AMT_INCOME_TOTAL']
     df['PAYMENT_RATE'] = df['AMT_ANNUITY'] / df['AMT_CREDIT']
-    del test_df
+    #del test_df
     gc.collect()
     return df
 
@@ -313,61 +331,48 @@ def load_model(filename='models/model.pkl'):
 
 # Make predictions using the loaded ensemble
 def predict_with_model(model_data, X):
-    """
-    Make predictions using the loaded model
-    
-    Parameters:
-    -----------
-    model_data : dict
-        Dictionary containing the model and feature names (from load_model)
-    X : pandas DataFrame
-        Features to predict on (must contain all required features)
-    
-    Returns:
-    --------
-    numpy array : Predicted probabilities for class 1
-    """
     model = model_data['model']
     feature_names = model_data['feature_names']
     
-    # Ensure X has the correct features in the correct order
-    X_features = X[feature_names]
+    # Garder seulement les features du modèle qui existent dans X
+    available_features = [f for f in feature_names if f in X.columns]
     
-    # Predictions
+    if len(available_features) < len(feature_names):
+        missing = set(feature_names) - set(X.columns)
+        print(f"⚠️ Features manquantes: {missing}")
+    
+    X_features = X[available_features]
     predictions = model.predict_proba(X_features)[:, 1]
     
     return predictions
 
 # LightGBM GBDT with KFold or Stratified KFold
-# Parameters from Tilii kernel: https://www.kaggle.com/tilii7/olivier-lightgbm-parameters-by-bayesian-opt/code
-def kfold_lightgbm(df, num_folds, stratified=True, save_models=None, selected_features=None):
+def kfold_lightgbm(df, num_folds, stratified=True, save_models=None, selected_features=None, threshold=0.2):
     # Clean column names for LightGBM compatibility
     df = clean_column_names(df)
     
-    # Divide in training/validation and test data
+    # ⚡ Split train/test ICI
     train_df = df[df['TARGET'].notnull()].copy()
-    test_df = df[df['TARGET'].isnull()].copy()
-   
 
     # ⚡ Optional: sample 20% of train data
-    train_df, _ = train_test_split(
+    train_df, test_df = train_test_split(
         train_df,
-        test_size=0.80,  # garder 20% pour l'entraînement
+        test_size=0.20,
         stratify=train_df['TARGET'],
         random_state=1001
     )
-    print(f"Sampled 20% of training data: {train_df.shape}")
         
     del df
     gc.collect()
+    
     # Cross validation model
     if stratified:
-        folds = StratifiedKFold(n_splits= num_folds, shuffle=True, random_state=1001)
+        folds = StratifiedKFold(n_splits=num_folds, shuffle=True, random_state=1001)
     else:
-        folds = KFold(n_splits= num_folds, shuffle=True, random_state=1001)
+        folds = KFold(n_splits=num_folds, shuffle=True, random_state=1001)
+    
     # Create arrays and dataframes to store results
     oof_preds = np.zeros(train_df.shape[0])
-    sub_preds = np.zeros(test_df.shape[0])
     feature_importance_df = pd.DataFrame()
 
     if selected_features is None:
@@ -377,51 +382,45 @@ def kfold_lightgbm(df, num_folds, stratified=True, save_models=None, selected_fe
     else:
         feats = selected_features
     
-    print("Starting LightGBM. Train shape: {}, test shape: {}".format(train_df.shape, test_df.shape))
+    print("Starting LightGBM. Train shape: {}".format(train_df.shape))
+    print("Test shape: {}".format(test_df.shape))
+    print(f"Threshold: {threshold}")  # ⚡ Afficher le seuil utilisé
     
     # List to store trained models
     trained_models = []
-    
     fold_aucs = []
 
     for n_fold, (train_idx, valid_idx) in enumerate(folds.split(train_df[feats], train_df['TARGET'])):
         train_x, train_y = train_df[feats].iloc[train_idx], train_df['TARGET'].iloc[train_idx]
         valid_x, valid_y = train_df[feats].iloc[valid_idx], train_df['TARGET'].iloc[valid_idx]
 
-        # LightGBM parameters found by Bayesian optimization
         clf = LGBMClassifier(
             n_jobs=4,
-            n_estimators=10000,
-            learning_rate=0.02,
-            num_leaves=34,
-            colsample_bytree=0.9497036,
-            subsample=0.8715623,
-            max_depth=8,
-            reg_alpha=0.041545473,
-            reg_lambda=0.0735294,
-            min_split_gain=0.0222415,
-            min_child_weight=39.3259775,
-            verbose=-1,
-            force_col_wise=True)
+            n_estimators=100,
+            learning_rate=0.1,
+            verbose=-1)
 
         clf.fit(train_x, train_y, eval_set=[(train_x, train_y), (valid_x, valid_y)], 
             eval_metric='auc', callbacks=[])
 
-        oof_preds[valid_idx] = clf.predict_proba(valid_x)[:, 1]
-        sub_preds += clf.predict_proba(test_df[feats])[:, 1] / folds.n_splits
+        # ⚡ Obtenir les probabilités
+        proba = clf.predict_proba(valid_x)[:, 1]
+        oof_preds[valid_idx] = proba
 
         fold_importance_df = pd.DataFrame()
         fold_importance_df["feature"] = feats
         fold_importance_df["importance"] = clf.feature_importances_
         fold_importance_df["fold"] = n_fold + 1
         feature_importance_df = pd.concat([feature_importance_df, fold_importance_df], axis=0)
-        #print('Fold %2d AUC : %.6f' % (n_fold + 1, roc_auc_score(valid_y, oof_preds[valid_idx])))
         
-        # Store the trained model
         trained_models.append(clf)
         
-        fold_auc = roc_auc_score(valid_y, oof_preds[valid_idx])
-        print('Fold %2d AUC : %.6f' % (n_fold + 1, fold_auc))
+        # ⚡ Calculer les métriques avec le seuil personnalisé
+        fold_auc = roc_auc_score(valid_y, proba)
+        pred_binary = (proba >= threshold).astype(int)
+        fold_f1 = f1_score(valid_y, pred_binary)
+        
+        print('Fold %2d AUC : %.6f | F1@%.1f : %.6f' % (n_fold + 1, fold_auc, threshold, fold_f1))
         fold_aucs.append(fold_auc)
 
         del train_x, train_y, valid_x, valid_y
@@ -433,15 +432,12 @@ def kfold_lightgbm(df, num_folds, stratified=True, save_models=None, selected_fe
     best_model = trained_models[best_fold_idx]
     print(f"Meilleur fold = {best_fold_idx+1}, AUC = {fold_aucs[best_fold_idx]:.6f}")
     
-    # Save models if requested
     if save_models:
         save_best_model(best_model, feats)
     
-    # Write submission file and plot feature importance
-    test_df.loc[:, 'TARGET'] = sub_preds
-    test_df[['SK_ID_CURR', 'TARGET']].to_csv(submission_file_name, index= False)
     display_importances(feature_importance_df)
-    return feature_importance_df, trained_models
+    
+    return feature_importance_df, trained_models, train_df, test_df
 
 # Display/plot feature importance
 def display_importances(feature_importance_df_):
@@ -466,7 +462,7 @@ def get_top_features(feature_importance_df, top_n=40):
     return top_features
 
 def main():
-    df = application_train_test()
+    df = application_train()
     with timer("Process bureau and bureau_balance"):
         bureau = bureau_and_balance()
         print("Bureau df shape:", bureau.shape)
@@ -497,56 +493,50 @@ def main():
         df = df.join(cc, how='left', on='SK_ID_CURR')
         del cc
         gc.collect()
-    with timer("Run LightGBM with kfold"):
-        feat_importance, _ = kfold_lightgbm(
-        df,
-        num_folds=2,
-        stratified=True,
-        save_models=False
+
+    
+    with timer("Run LightGBM with kfold (full features)"):
+        feat_importance, _, train_df, test_df = kfold_lightgbm(  # ⚡ Récupérer train_df et test_df
+            df,
+            num_folds=10,
+            stratified=True,
+            save_models=False
         )
 
     # Récupération des 40 meilleures features
     top_40_features = sorted(get_top_features(feat_importance, top_n=40))
     print(f"Top 40 features: {top_40_features}")
 
-    with timer("Run LightGBM with kfold"):
-        feat_importance_40, models_40 = kfold_lightgbm(
-        df,
-        num_folds=5,
-        stratified=True,
-        save_models=True,
-        selected_features=top_40_features
-)
-    
+    with timer("Run LightGBM with kfold (top 40)"):
+        feat_importance_40, models_40, _, _ = kfold_lightgbm(
+            df[top_40_features + ['TARGET']],  # ✅ Filtre les colonnes ici
+            num_folds=5,
+            stratified=True,
+            save_models=True,
+            selected_features=top_40_features
+        )
+        
     # =========================
     # EXPORT DATASETS
     # =========================
-
-    # Séparation Train / Test
-    train_df = df[df['TARGET'].notnull()].copy()
-    test_df = df[df['TARGET'].isnull()].copy()
-
-    # Export datasets complets
-    #train_df.to_csv("output/dataset_train_full.csv", index=False)
-    #test_df.to_csv("output/dataset_test_full.csv", index=False)
-    #print("✔ dataset_train_full.csv / dataset_test_full.csv exportés")
 
     # Colonnes à garder
     train_cols_40 = top_40_features + ['TARGET', 'SK_ID_CURR']
     test_cols_40 = top_40_features + ['SK_ID_CURR']
 
-    # Sous-datasets
+    # Sous-datasets avec top 40 features
     train_df_40 = train_df[train_cols_40]
     test_df_40 = test_df[test_cols_40]
 
-    # Export datasets réduits
+    # Export datasets
     train_df_40.to_csv("output/dataset_train_top40.csv", index=False)
     test_df_40.to_csv("output/dataset_test_top40.csv", index=False)
-
-    print("✔ dataset_train_top40.csv / dataset_test_top40.csv exportés")
-
     
-    return feat_importance_40, models_40
+    print("✔ Datasets exportés")
+    print(f"  - Train: {train_df_40.shape}")
+    print(f"  - Test: {test_df_40.shape}")
+    
+    return feat_importance_40, models_40, train_df_40, test_df_40
 
 if __name__ == "__main__":
     submission_file_name = "output/predictions_from_script.csv"

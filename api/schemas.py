@@ -6,103 +6,73 @@ from typing import Optional
 
 class ClientData(BaseModel):
     """Données d'entrée du client pour la prédiction (features ML)"""
-    ACTIVE_DAYS_CREDIT_ENDDATE_MIN: float = Field(...)
-    ACTIVE_DAYS_CREDIT_MAX: float = Field(...)
-    ACTIVE_DAYS_CREDIT_MEAN: float = Field(...)
-    ACTIVE_DAYS_CREDIT_UPDATE_MEAN: float = Field(...)
 
-    AMT_ANNUITY: float = Field(...)
-    AMT_CREDIT: float = Field(...)
-    AMT_GOODS_PRICE: float = Field(...)
+    #SK_ID_CURR: Optional[int] = Field(None)
 
-    ANNUITY_INCOME_PERC: float = Field(...)
+    ACTIVE_AMT_CREDIT_MAX_OVERDUE_MEAN: Optional[float] = Field(None)
+    ACTIVE_AMT_CREDIT_SUM_MAX: Optional[float] = Field(None)
+    ACTIVE_DAYS_CREDIT_MAX: Optional[float] = Field(None)
 
-    APPROVED_APP_CREDIT_PERC_VAR: float = Field(...)
-    APPROVED_DAYS_DECISION_MAX: float = Field(...)
+    AMT_ANNUITY: Optional[float] = Field(None)
+    AMT_CREDIT: Optional[float] = Field(None)
+    AMT_GOODS_PRICE: Optional[float] = Field(None)
 
-    BURO_AMT_CREDIT_SUM_MEAN: float = Field(...)
-    BURO_DAYS_CREDIT_VAR: float = Field(...)
+    ANNUITY_INCOME_PERC: Optional[float] = Field(None)
 
-    CLOSED_DAYS_CREDIT_MAX: float = Field(...)
+    APPROVED_AMT_ANNUITY_MEAN: Optional[float] = Field(None)
+    APPROVED_CNT_PAYMENT_MEAN: Optional[float] = Field(None)
+    APPROVED_DAYS_DECISION_MAX: Optional[float] = Field(None)
 
-    DAYS_BIRTH: float = Field(...)
-    DAYS_EMPLOYED: float = Field(...)
-    DAYS_EMPLOYED_PERC: float = Field(...)
-    DAYS_ID_PUBLISH: float = Field(...)
-    DAYS_LAST_PHONE_CHANGE: float = Field(...)
-    DAYS_REGISTRATION: float = Field(...)
+    BURO_AMT_CREDIT_MAX_OVERDUE_MEAN: Optional[float] = Field(None)
+    BURO_AMT_CREDIT_SUM_DEBT_MEAN: Optional[float] = Field(None)
+    BURO_DAYS_CREDIT_MAX: Optional[float] = Field(None)
+    BURO_DAYS_CREDIT_MEAN: Optional[float] = Field(None)
 
-    EXT_SOURCE_1: float = Field(...)
-    EXT_SOURCE_2: float = Field(...)
-    EXT_SOURCE_3: float = Field(...)
+    CC_CNT_DRAWINGS_ATM_CURRENT_MEAN: Optional[float] = Field(None)
 
-    INCOME_CREDIT_PERC: float = Field(...)
-    INCOME_PER_PERSON: float = Field(...)
+    CLOSED_AMT_CREDIT_SUM_MAX: Optional[float] = Field(None)
+    CLOSED_DAYS_CREDIT_ENDDATE_MAX: Optional[float] = Field(None)
+    CLOSED_DAYS_CREDIT_MAX: Optional[float] = Field(None)
+    CLOSED_DAYS_CREDIT_VAR: Optional[float] = Field(None)
 
-    INSTAL_AMT_PAYMENT_MAX: float = Field(...)
-    INSTAL_AMT_PAYMENT_MIN: float = Field(...)
-    INSTAL_DAYS_ENTRY_PAYMENT_MAX: float = Field(...)
-    INSTAL_DAYS_ENTRY_PAYMENT_SUM: float = Field(...)
-    INSTAL_DBD_MAX: float = Field(...)
-    INSTAL_DBD_MEAN: float = Field(...)
-    INSTAL_DBD_SUM: float = Field(...)
+    CODE_GENDER: Optional[float] = Field(None)
 
-    PAYMENT_RATE: float = Field(...)
+    DAYS_BIRTH: Optional[float] = Field(None)
+    DAYS_EMPLOYED: Optional[float] = Field(None)
+    DAYS_EMPLOYED_PERC: Optional[float] = Field(None)
+    DAYS_ID_PUBLISH: Optional[float] = Field(None)
+    DAYS_LAST_PHONE_CHANGE: Optional[float] = Field(None)
+    DAYS_REGISTRATION: Optional[float] = Field(None)
 
-    POS_MONTHS_BALANCE_MEAN: float = Field(...)
-    POS_NAME_CONTRACT_STATUS_Active_MEAN: float = Field(...)
-    POS_NAME_CONTRACT_STATUS_Completed_MEAN: float = Field(...)
+    EXT_SOURCE_1: Optional[float] = Field(None)
+    EXT_SOURCE_2: Optional[float] = Field(None)
+    EXT_SOURCE_3: Optional[float] = Field(None)
 
-    PREV_APP_CREDIT_PERC_MEAN: float = Field(...)
-    PREV_APP_CREDIT_PERC_VAR: float = Field(...)
-    PREV_DAYS_DECISION_MAX: float = Field(...)
-    PREV_HOUR_APPR_PROCESS_START_MEAN: float = Field(...)
+    INSTAL_AMT_PAYMENT_MEAN: Optional[float] = Field(None)
+    INSTAL_AMT_PAYMENT_MIN: Optional[float] = Field(None)
+    INSTAL_AMT_PAYMENT_SUM: Optional[float] = Field(None)
+    INSTAL_DBD_MAX: Optional[float] = Field(None)
+    INSTAL_DBD_SUM: Optional[float] = Field(None)
+    INSTAL_DPD_MEAN: Optional[float] = Field(None)
+    INSTAL_PAYMENT_PERC_MEAN: Optional[float] = Field(None)
 
-    REGION_POPULATION_RELATIVE: float = Field(...)
+    OWN_CAR_AGE: Optional[float] = Field(None)
+
+    PAYMENT_RATE: Optional[float] = Field(None)
+
+    POS_MONTHS_BALANCE_SIZE: Optional[float] = Field(None)
+
+    PREV_CNT_PAYMENT_MEAN: Optional[float] = Field(None)
 
     class Config:
         json_schema_extra = {
             "example": {
-                "EXT_SOURCE_3": 0.26,
-                "EXT_SOURCE_2": 0.68,
-                "PAYMENT_RATE": 0.07,
-                "DAYS_EMPLOYED": -1000,
-                "DAYS_REGISTRATION": -5000,
-                "EXT_SOURCE_1": 0.34,
-                "DAYS_BIRTH": -13000,
-                "DAYS_ID_PUBLISH": -4000,
-                "DAYS_EMPLOYED_PERC": 0.07,
-                "AMT_ANNUITY": 21000.0,
-                "REGION_POPULATION_RELATIVE": 0.03,
-                "INSTAL_DBD_MEAN": 4,
-                "ANNUITY_INCOME_PERC": 0.12,
-                "INSTAL_DBD_SUM": 170,
-                "ACTIVE_DAYS_CREDIT_ENDDATE_MIN": 350,
-                "DAYS_LAST_PHONE_CHANGE": -300,
-                "INSTAL_AMT_PAYMENT_MIN": 37,
-                "INCOME_CREDIT_PERC": 0.60,
-                "INSTAL_DAYS_ENTRY_PAYMENT_MAX": -4,
-                "BURO_DAYS_CREDIT_VAR": 0,
-                "ACTIVE_DAYS_CREDIT_UPDATE_MEAN": -17,
-                "APPROVED_DAYS_DECISION_MAX": -320,
-                "AMT_GOODS_PRICE": 225000,
-                "CLOSED_DAYS_CREDIT_MAX": 0,
-                "PREV_APP_CREDIT_PERC_VAR": 0.01,
-                "PREV_APP_CREDIT_PERC_MEAN": 0.93,
-                "INSTAL_DBD_MAX": 20.0,
-                "INSTAL_DAYS_ENTRY_PAYMENT_SUM": -6000,
-                "BURO_AMT_CREDIT_SUM_MEAN": 12400,
-                "POS_MONTHS_BALANCE_MEAN": -6,
-                "INCOME_PER_PERSON": 90000,
-                "POS_NAME_CONTRACT_STATUS_Active_MEAN": 0.90,
-                "POS_NAME_CONTRACT_STATUS_Completed_MEAN": 0.09,
-                "PREV_HOUR_APPR_PROCESS_START_MEAN": 20,
-                "ACTIVE_DAYS_CREDIT_MAX": -17,
-                "ACTIVE_DAYS_CREDIT_MEAN": -17,
-                "APPROVED_APP_CREDIT_PERC_VAR": 0.01,
-                "AMT_CREDIT": 296000,
-                "INSTAL_AMT_PAYMENT_MAX": 22500,
-                "PREV_DAYS_DECISION_MAX": -320
+                "SK_ID_CURR": 100001,
+                "DAYS_BIRTH": -14551,
+                "AMT_CREDIT": 261648,
+                "AMT_ANNUITY": 12856.5,
+                "EXT_SOURCE_1": 0.53,
+                "PAYMENT_RATE": 0.049
             }
         }
 
@@ -112,16 +82,20 @@ class ClientData(BaseModel):
 
     @field_validator("DAYS_BIRTH")
     @classmethod
-    def days_birth_must_be_adult(cls, v: int) -> int:
-        if v > -6570:
+    def days_birth_must_be_adult(cls, v: Optional[float]) -> Optional[float]:
+        if v is not None and v > -6570:
             raise ValueError("DAYS_BIRTH doit être ≤ -6570 (âge minimum ≈ 18 ans)")
         return v
 
-    @field_validator("INCOME_PER_PERSON")
+    @field_validator(
+        "ANNUITY_INCOME_PERC",
+        "PAYMENT_RATE",
+        "INSTAL_PAYMENT_PERC_MEAN",
+    )
     @classmethod
-    def income_per_person_non_negative(cls, v: float) -> float:
-        if v < 0:
-            raise ValueError("INCOME_PER_PERSON ne peut pas être négatif")
+    def ratios_must_be_non_negative(cls, v: Optional[float]) -> Optional[float]:
+        if v is not None and v < 0:
+            raise ValueError("Les ratios ne peuvent pas être négatifs")
         return v
 
 class PredictionResponse(BaseModel):
@@ -144,7 +118,6 @@ class PredictionResponse(BaseModel):
             }
         }
 
-
 class HealthResponse(BaseModel):
     """Réponse du health check"""
     
@@ -160,4 +133,3 @@ class HealthResponse(BaseModel):
                 "version": "1.0.0"
             }
         }
-

@@ -46,32 +46,49 @@ LOGS_FILE = "logs/production_logs.json"
 
 def load_model():
     """
-    Charge le modèle au démarrage de l'application.
-    IMPORTANT: Le modèle est chargé UNE SEULE FOIS, pas à chaque requête.
+    Charge le modèle LightGBM au démarrage de l'application.
+    Le modèle est chargé UNE SEULE FOIS.
     """
-    global MODEL
-    model_path = "models/model.pkl"
-    
-    try:
-        if os.path.exists(model_path):
-            MODEL = joblib.load(model_path)["model"]
-            logger.info(f"✅ Modèle chargé avec succès depuis {model_path}")
-            print(type(MODEL))
-            print(MODEL.keys() if isinstance(MODEL, dict) else MODEL)
-        else:
-            logger.warning(f"⚠️ Modèle non trouvé à {model_path}. Utilisation d'un modèle de démonstration.")
-            # Créer un modèle simple pour la démo
-            from sklearn.ensemble import RandomForestClassifier
-            MODEL = RandomForestClassifier(n_estimators=10, random_state=42)
-            # Entraînement rapide sur données synthétiques
-            X_dummy = np.random.rand(100, 5)
-            y_dummy = np.random.randint(0, 2, 100)
-            MODEL.fit(X_dummy, y_dummy)
-            logger.info("✅ Modèle de démonstration créé")
-    except Exception as e:
-        logger.error(f"❌ Erreur lors du chargement du modèle: {e}")
-        raise
+    global MODEL, MODEL_FEATURES
 
+    model_path = "models/model.pkl"
+
+    try:
+        if not os.path.exists(model_path):
+            raise FileNotFoundError(f"Modèle introuvable : {model_path}")
+
+        artifact = joblib.load(model_path)
+
+        # Cas recommandé : dict {"model": ..., "features": [...]}
+        if isinstance(artifact, dict):
+            MODEL = artifact["model"]
+            MODEL_FEATURES = artifact.get("features")
+
+        else:
+            MODEL = artifact
+            MODEL_FEATURES = None
+
+        logger.info(f"✅ Modèle LightGBM chargé depuis {model_path}")
+        logger.info(f"Type du modèle : {type(MODEL)}")
+
+        # -----------------------------
+        # 🔍 Extraction des features
+        # -----------------------------
+        if MODEL_FEATURES:
+            logger.info(f"📌 Features (artifact) : {MODEL_FEATURES}")
+
+        elif hasattr(MODEL, "feature_name_"):
+            MODEL_FEATURES = list(MODEL.feature_name_)
+            logger.info(f"📌 Features (LightGBM) : {MODEL_FEATURES}")
+
+        else:
+            raise RuntimeError(
+                "Impossible de récupérer les features depuis le modèle LightGBM"
+            )
+
+    except Exception as e:
+        logger.error(f"❌ Erreur lors du chargement du modèle : {e}")
+        raise
 
 def log_prediction(client_data: dict, prediction: dict):
     """
@@ -145,7 +162,7 @@ async def predict(client_data: ClientData, request: Request):
         
         # Calculer la confiance et la décision
         confidence = max(abs(score), abs(1 - score))
-        decision = "APPROVED" if score >= 0.5 else "REJECTED"
+        decision = "APPROVED" if score >= 0.2 else "REJECTED"
         
         # Temps d'inférence
         inference_time = (time.time() - start_time) * 1000  # en ms
