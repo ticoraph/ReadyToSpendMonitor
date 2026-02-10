@@ -12,8 +12,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import pandas as pd
 import numpy as np
-import subprocess
 from api.schemas import ClientData, PredictionResponse, HealthResponse
+
+import cProfile
+import pstats
+import io
 
 # Configuration du logging
 logging.basicConfig(
@@ -138,12 +141,16 @@ async def predict(client_data: ClientData, request: Request):
     Effectue une prédiction de score de crédit
     Retourne un score de solvabilité entre 0 et 1, et une décision.
     """
-    
+
     # Vérifier que le modèle est chargé
     if MODEL is None:
         raise HTTPException(status_code=503, detail="Modèle non disponible")
     
     try:
+
+        pr = cProfile.Profile()
+        pr.enable()
+
         # Mesurer le temps d'inférence
         start_time = time.time()
         
@@ -187,8 +194,17 @@ async def predict(client_data: ClientData, request: Request):
         
         logger.info(f"✅ Prédiction réussie: {client_id} - Score: {score:.2f} - Décision: {decision}")
         
+        pr.disable()
+        s = io.StringIO()
+        ps = pstats.Stats(pr, stream=s).sort_stats("cumulative")
+        ps.print_stats(20)  # top 20 fonctions
+        logger.info(s.getvalue())
+        pr.dump_stats("output/predict.prof")
+
         return response
-        
+    
+
+
     except Exception as e:
         logger.error(f"❌ Erreur lors de la prédiction: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Erreur de prédiction: {str(e)}")
