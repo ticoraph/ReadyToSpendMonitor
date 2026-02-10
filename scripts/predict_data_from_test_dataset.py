@@ -20,7 +20,7 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
-API_URL = os.getenv("API_BASE_URL", "http://localhost:8000")
+API_URL = os.getenv("API_BASE_URL", "http://127.0.0.1:8000")
 CSV_PATH = "output/dataset_test_top40.csv"
 
 def test_health():

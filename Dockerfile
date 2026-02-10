@@ -19,7 +19,7 @@ COPY api api
 COPY models models
 COPY monitoring monitoring
 COPY tests tests
-COPY output output
+#COPY output output
 COPY scripts scripts
 
 # Créer les dossiers nécessaires
