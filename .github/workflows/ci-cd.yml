@@ -97,18 +97,7 @@ jobs:
 
       - name: Deploy Docker container
         run: |
-          echo "Pulling latest Docker image..."
-          docker pull ${{ needs.build.outputs.image-tag }}
-          
-          echo "Deploying with Docker Compose..."
-          docker-compose -f docker-compose.yaml up -d
-          
-          echo "Checking deployment status..."
-          docker ps
-          
-          # Optionnel: vérifier la santé de l'application
-          sleep 10
-          curl -f http://localhost:8000/health || echo "Health check failed"
+
 
   notification:
     name: Send Notification
