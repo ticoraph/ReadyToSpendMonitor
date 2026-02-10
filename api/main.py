@@ -167,8 +167,9 @@ async def predict(client_data: ClientData, request: Request):
             prediction = MODEL.predict(features)
             score = float(prediction[0])
         
-        # Calculer la confiance et la décision
-        confidence = max(abs(score), abs(1 - score))
+        # Confidence basée sur le seuil métier (simple et utile)
+        confidence = abs(score - 0.2) / 0.8
+        confidence = min(confidence, 1.0)
         decision = "APPROVED" if score >= 0.2 else "REJECTED"
         
         # Temps d'inférence

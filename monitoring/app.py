@@ -146,7 +146,7 @@ with col2:
     approved = (production_df['decision'] == 'APPROVED').sum() if 'decision' in production_df.columns else 0
     approval_rate = (approved / len(production_df) * 100) if len(production_df) > 0 else 0
     st.metric(
-        label="Taux d'Approbation",
+        label="Taux Crédit Accepté",
         value=f"{approval_rate:.1f}%"
     )
 
@@ -160,7 +160,7 @@ with col3:
 with col4:
     avg_score = production_df['score'].mean() if 'score' in production_df.columns else 0
     st.metric(
-        label="Score Moyen",
+        label="Seuil de Decision Moyen",
         value=f"{avg_score:.3f}"
     )
 

@@ -1,4 +1,4 @@
-name: CI/CD Pipeline
+name: CI/CD Pipeline with Docker
 
 on:
   push:
@@ -37,17 +37,84 @@ jobs:
         run: |
           pytest tests/ -v --cov-report=html
 
+  build:
+    name: Build Docker Image
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.ref == 'refs/heads/main'
+    outputs:
+      image-tag: ${{ steps.meta.outputs.tags }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ secrets.DOCKER_USERNAME }}/ocr
+          tags: |
+            type=ref,event=branch
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,prefix={{branch}}-
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/ocr:buildcache
+          cache-to: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/ocr:buildcache,mode=max
+
   deploy:
     name: Deploy to Production
     runs-on: ubuntu-latest
+    needs: build
     if: github.ref == 'refs/heads/main'
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Deploy (Simulated)
+      - name: Deploy Docker container
         run: |
-          echo "Deployment step - configure your deployment target here"
-          echo "Options: AWS ECS, Google Cloud Run, Heroku, Hugging Face Spaces, etc."
-          # Add your deployment commands here
+          echo "Pulling latest Docker image..."
+          docker pull ${{ needs.build.outputs.image-tag }}
+          
+          echo "Deploying with Docker Compose..."
+          docker-compose -f docker-compose.yaml up -d
+          
+          echo "Checking deployment status..."
+          docker ps
+          
+          # Optionnel: vérifier la santé de l'application
+          sleep 10
+          curl -f http://localhost:8000/health || echo "Health check failed"
+
+  notification:
+    name: Send Notification
+    runs-on: ubuntu-latest
+    needs: [test, build, deploy]
+    if: always()
+
+    steps:
+      - name: Success notification
+        if: success()
+        run: echo "✅ Pipeline completed successfully!"
+
+      - name: Failure notification
+        if: failure()
+        run: echo "❌ Pipeline failed!"
