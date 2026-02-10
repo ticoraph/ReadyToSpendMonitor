@@ -15,6 +15,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Create logs and output directories
+        run: |
+          mkdir -p logs
+          mkdir -p output
+          echo "Directories created at $(date)" > logs/pipeline.log
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
