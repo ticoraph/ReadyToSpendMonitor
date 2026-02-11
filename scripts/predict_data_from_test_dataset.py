@@ -21,7 +21,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 API_URL = os.getenv("API_BASE_URL", "http://127.0.0.1:8000")
-CSV_PATH = "output/dataset_test_top40_random.csv"
+CSV_PATH = "output/dataset_test_top40.csv"
 
 def test_health():
     """Test du health check"""
@@ -122,9 +122,6 @@ def main():
         payload = {k: float(v) for k, v in row.to_dict().items()}
         print(f"\n✅ Payload valide (ligne 0): {list(payload.keys())}")
 
-
-
-
             # ✅ Forcer la conversion en float
         df = df.astype(float, errors='ignore')
 
@@ -184,7 +181,6 @@ def main():
                 f"Ligne {idx} | KO | status={result['status_code']}"
             )
 
-
     ########
 
     
@@ -210,6 +206,13 @@ def main():
         logger.info(f"Latence moy.   : {np.mean(latencies):.2f} ms")
         logger.info(f"Latence min    : {np.min(latencies):.2f} ms")
         logger.info(f"Latence max    : {np.max(latencies):.2f} ms")
+
+        total = len(results)
+        
+        total_time = sum(r["latency_ms"] for r in results)
+        print(f"\nTemps total:        {total_time/1000:.2f} s")
+        print(f"Throughput:         {total / (total_time/1000):.2f} req/s")
+        print("="*60 + "\n")
 
     logger.info("✅ Tests terminés")
 
