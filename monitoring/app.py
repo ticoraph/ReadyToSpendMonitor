@@ -11,6 +11,7 @@ import plotly.graph_objects as go
 from datetime import datetime, timedelta
 from pathlib import Path
 import os
+from scipy import stats
 
 # Configuration de la page
 st.set_page_config(
@@ -80,7 +81,7 @@ def calculate_drift_score(reference, production, column):
     """
     Calcule un score de drift simple avec le test de Kolmogorov-Smirnov
     """
-    from scipy import stats
+    
     
     if column not in reference.columns or column not in production.columns:
         return None, None
