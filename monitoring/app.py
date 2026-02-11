@@ -158,11 +158,24 @@ with col3:
     )
 
 with col4:
-    avg_score = production_df['score'].mean() if 'score' in production_df.columns else 0
-    st.metric(
-        label="Seuil de Decision Moyen",
-        value=f"{avg_score:.3f}"
-    )
+    if 'score' in production_df.columns:
+        LOW, HIGH = 0.15, 0.25
+
+        confident_mask = (production_df['score'] < LOW) | (production_df['score'] > HIGH)
+        confidence_rate = confident_mask.mean() * 100
+
+        if confidence_rate >= 90:
+            status = "🟢 VERT"
+        elif confidence_rate >= 80:
+            status = "🟠 ORANGE"
+        else:
+            status = "🔴 ROUGE"
+
+        st.metric(
+            label="Taux de Confiance Modèle",
+            value=f"{status}",
+            delta=f"{confidence_rate:.1f}% prédictions confiantes"
+        )
 
 st.markdown("---")
 
@@ -228,46 +241,7 @@ Un drift significatif peut indiquer que le modèle doit être ré-entraîné.
 
 # Features à analyser
 features = [
-    'ACTIVE_DAYS_CREDIT_ENDDATE_MIN',
-    'ACTIVE_DAYS_CREDIT_MAX',
-    'ACTIVE_DAYS_CREDIT_MEAN',
-    'ACTIVE_DAYS_CREDIT_UPDATE_MEAN',
-    'AMT_ANNUITY',
-    'AMT_CREDIT',
-    'AMT_GOODS_PRICE',
-    'ANNUITY_INCOME_PERC',
-    'APPROVED_APP_CREDIT_PERC_VAR',
-    'APPROVED_DAYS_DECISION_MAX',
-    'BURO_AMT_CREDIT_SUM_MEAN',
-    'BURO_DAYS_CREDIT_VAR',
-    'CLOSED_DAYS_CREDIT_MAX',
-    'DAYS_BIRTH',
-    'DAYS_EMPLOYED',
-    'DAYS_EMPLOYED_PERC',
-    'DAYS_ID_PUBLISH',
-    'DAYS_LAST_PHONE_CHANGE',
-    'DAYS_REGISTRATION',
-    'EXT_SOURCE_1',
-    'EXT_SOURCE_2',
-    'EXT_SOURCE_3',
-    'INCOME_CREDIT_PERC',
-    'INCOME_PER_PERSON',
-    'INSTAL_AMT_PAYMENT_MAX',
-    'INSTAL_AMT_PAYMENT_MIN',
-    'INSTAL_DAYS_ENTRY_PAYMENT_MAX',
-    'INSTAL_DAYS_ENTRY_PAYMENT_SUM',
-    'INSTAL_DBD_MAX',
-    'INSTAL_DBD_MEAN',
-    'INSTAL_DBD_SUM',
-    'PAYMENT_RATE',
-    'POS_MONTHS_BALANCE_MEAN',
-    'POS_NAME_CONTRACT_STATUS_Active_MEAN',
-    'POS_NAME_CONTRACT_STATUS_Completed_MEAN',
-    'PREV_APP_CREDIT_PERC_MEAN',
-    'PREV_APP_CREDIT_PERC_VAR',
-    'PREV_DAYS_DECISION_MAX',
-    'PREV_HOUR_APPR_PROCESS_START_MEAN',
-    'REGION_POPULATION_RELATIVE'
+'ACTIVE_AMT_CREDIT_MAX_OVERDUE_MEAN', 'ACTIVE_AMT_CREDIT_SUM_MAX', 'ACTIVE_DAYS_CREDIT_MAX', 'AMT_ANNUITY', 'AMT_CREDIT', 'AMT_GOODS_PRICE', 'ANNUITY_INCOME_PERC', 'APPROVED_AMT_ANNUITY_MEAN', 'APPROVED_CNT_PAYMENT_MEAN', 'APPROVED_DAYS_DECISION_MAX', 'BURO_AMT_CREDIT_MAX_OVERDUE_MEAN', 'BURO_AMT_CREDIT_SUM_DEBT_MEAN', 'BURO_DAYS_CREDIT_MAX', 'BURO_DAYS_CREDIT_MEAN', 'CC_CNT_DRAWINGS_ATM_CURRENT_MEAN', 'CLOSED_AMT_CREDIT_SUM_MAX', 'CLOSED_DAYS_CREDIT_ENDDATE_MAX', 'CLOSED_DAYS_CREDIT_MAX', 'CLOSED_DAYS_CREDIT_VAR', 'CODE_GENDER', 'DAYS_BIRTH', 'DAYS_EMPLOYED', 'DAYS_EMPLOYED_PERC', 'DAYS_ID_PUBLISH', 'DAYS_LAST_PHONE_CHANGE', 'DAYS_REGISTRATION', 'EXT_SOURCE_1', 'EXT_SOURCE_2', 'EXT_SOURCE_3', 'INSTAL_AMT_PAYMENT_MEAN', 'INSTAL_AMT_PAYMENT_MIN', 'INSTAL_AMT_PAYMENT_SUM', 'INSTAL_DBD_MAX', 'INSTAL_DBD_SUM', 'INSTAL_DPD_MEAN', 'INSTAL_PAYMENT_PERC_MEAN', 'OWN_CAR_AGE', 'PAYMENT_RATE', 'POS_MONTHS_BALANCE_SIZE', 'PREV_CNT_PAYMENT_MEAN'
 ]
 
 # Calculer le drift pour chaque feature
@@ -281,7 +255,7 @@ for feature in features:
                 'Feature': feature,
                 'KS Statistic': ks_stat,
                 'P-Value': p_value,
-                'Drift Détecté': '🔴 OUI' if p_value < 0 else '🟢 NON'
+                'Drift Détecté': '🔴 OUI' if p_value < 0.05 else '🟢 NON'
             })
 
 if drift_results:

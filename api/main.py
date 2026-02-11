@@ -13,6 +13,7 @@ from fastapi.responses import JSONResponse
 import pandas as pd
 import numpy as np
 from api.schemas import ClientData, PredictionResponse, HealthResponse
+from contextlib import asynccontextmanager
 
 import cProfile
 import pstats
@@ -25,27 +26,10 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Création de l'application FastAPI
-app = FastAPI(
-    title="API de Scoring de Crédit",
-    description="API pour prédire la solvabilité des demandes de crédit",
-    version="1.0.0"
-)
-
-# Configuration CORS
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
 # Variables globales pour le modèle
 MODEL = None
 MODEL_VERSION = "1.0.0"
 LOGS_FILE = "logs/production_logs.json"
-
 
 def load_model():
     """
@@ -111,29 +95,31 @@ def log_prediction(client_data: dict, prediction: dict):
     except Exception as e:
         logger.error(f"Erreur lors de l'écriture des logs: {e}")
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
 
-@app.on_event("startup")
-async def startup_event():
-    """
-    Événement exécuté au démarrage de l'API
-    """
     logger.info("🚀 Démarrage de l'API de Scoring...")
     load_model()
     logger.info("✅ API prête à recevoir des requêtes")
+    app.state.model = MODEL
+    yield
 
-'''
-@app.get("/", tags=["Root"])
-async def root():
-    """
-    Point d'entrée de l'API
-    """
-    return {
-        "message": "API de Scoring de Crédit - Prêt à Dépenser",
-        "version": MODEL_VERSION,
-        "documentation": "/docs",
-        "health": "/health"
-    }
-'''
+# Création de l'application FastAPI
+app = FastAPI(
+    title="API de Scoring de Crédit",
+    description="API pour prédire la solvabilité des demandes de crédit",
+    version="1.0.0",
+    lifespan=lifespan   # 👈 ICI
+)
+
+# Configuration CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.post("/predict", response_model=PredictionResponse, tags=["Prediction"])
 async def predict(client_data: ClientData, request: Request):
@@ -141,11 +127,8 @@ async def predict(client_data: ClientData, request: Request):
     Effectue une prédiction de score de crédit
     Retourne un score de solvabilité entre 0 et 1, et une décision.
     """
+    model = request.app.state.model
 
-    # Vérifier que le modèle est chargé
-    if MODEL is None:
-        raise HTTPException(status_code=503, detail="Modèle non disponible")
-    
     try:
 
         pr = cProfile.Profile()
@@ -160,11 +143,11 @@ async def predict(client_data: ClientData, request: Request):
         # Prédiction
         try:
             # Essayer avec predict_proba (pour les classifieurs)
-            probas = MODEL.predict_proba(features)
+            probas = model.predict_proba(features)
             score = float(probas[0][1])  # Probabilité de la classe positive
         except AttributeError:
             # Si pas de predict_proba, utiliser predict
-            prediction = MODEL.predict(features)
+            prediction = model.predict(features)
             score = float(prediction[0])
         
         # Confidence basée sur le seuil métier (simple et utile)
