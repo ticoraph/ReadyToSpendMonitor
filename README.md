@@ -9,7 +9,7 @@ Projet de mise en production d'un modèle de scoring de crédit pour l'entrepris
 - ✅ Pipeline CI/CD avec GitHub Actions
 - ✅ Monitoring et détection de drift avec Streamlit
 - ✅ Tests unitaires automatisés
-- ✅ Déploiement sur Hugging Face Spaces
+- ✅ Déploiement sur Docker HUB
 
 ## 🏗️ Architecture du Projet
 
@@ -29,10 +29,10 @@ ReadyToSpendMonitor/
 │   └── drift_analysis.ipynb
 ├── scripts/               # Scripts utilitaires
 │   └── train_model.py    # Entraînement du modèle
+│   └── predict_data_from_dataset_thread.py    # Predictions sur un dataset
 ├── .github/workflows/     # CI/CD
 │   └── ci-cd.yml        # Pipeline GitHub Actions
 ├── Dockerfile            # Configuration Docker
-├── docker-compose.yaml    # Configuration Docker compose
 ├── requirements.txt      # Dépendances Python
 └── .gitignore           # Fichiers à ignorer
 ```
@@ -63,7 +63,7 @@ pip install -r requirements.txt
 ### Lancement de l'API
 
 ```bash
-# Méthode 1 : Uvicorn
+# Uvicorn
 uvicorn api.main:app --reload --host 0.0.0.0 --port 8000
 
 # L'API sera accessible sur http://localhost:8000
@@ -83,7 +83,9 @@ streamlit run monitoring/app.py
 
 ```bash
 # Construire l'image
-docker compose up
+docker build -t readytospendmonitor .
+# Executer
+docker run -p 8000:8000 -p 8501:8501 -v ./logs:/app/logs readytospendmonitor
 
 ```
 
@@ -95,13 +97,58 @@ docker compose up
 curl -X POST "http://localhost:8000/predict" \
   -H "Content-Type: application/json" \
   -d '{
-  }'
+  "ACTIVE_AMT_CREDIT_MAX_OVERDUE_MEAN": 7195.5,
+  "ACTIVE_AMT_CREDIT_SUM_MAX": 450000,
+  "ACTIVE_DAYS_CREDIT_MAX": -753,
+  "AMT_ANNUITY": 10548,
+  "AMT_CREDIT": 148365,
+  "AMT_GOODS_PRICE": 135000,
+  "ANNUITY_INCOME_PERC": 0.1019130434782608,
+  "APPROVED_AMT_ANNUITY_MEAN": 6340.785,
+  "APPROVED_CNT_PAYMENT_MEAN": 14.666666666666666,
+  "APPROVED_DAYS_DECISION_MAX": -348,
+  "BURO_AMT_CREDIT_MAX_OVERDUE_MEAN": 7195.5,
+  "BURO_AMT_CREDIT_SUM_DEBT_MEAN": 0,
+  "BURO_DAYS_CREDIT_MAX": -753,
+  "BURO_DAYS_CREDIT_MEAN": -979.6666666666666,
+  "CC_CNT_DRAWINGS_ATM_CURRENT_MEAN": 0.2666666666666666,
+  "CLOSED_AMT_CREDIT_SUM_MAX": 38650.5,
+  "CLOSED_DAYS_CREDIT_ENDDATE_MAX": -943,
+  "CLOSED_DAYS_CREDIT_MAX": -1065,
+  "CLOSED_DAYS_CREDIT_VAR": 256328,
+  "CODE_GENDER": 1,
+  "DAYS_BIRTH": -11716,
+  "DAYS_EMPLOYED": -449,
+  "DAYS_EMPLOYED_PERC": 0.0383236599522021,
+  "DAYS_ID_PUBLISH": -3961,
+  "DAYS_LAST_PHONE_CHANGE": -1420,
+  "DAYS_REGISTRATION": -3997,
+  "EXT_SOURCE_1": 0.3608707365728421,
+  "EXT_SOURCE_2": 0.4285392216965799,
+  "EXT_SOURCE_3": 0.7981372313187245,
+  "INSTAL_AMT_PAYMENT_MEAN": 10274.82081081081,
+  "INSTAL_AMT_PAYMENT_MIN": 2.7,
+  "INSTAL_AMT_PAYMENT_SUM": 380168.37,
+  "INSTAL_DBD_MAX": 60,
+  "INSTAL_DBD_SUM": 833,
+  "INSTAL_DPD_MEAN": 0.4594594594594595,
+  "INSTAL_PAYMENT_PERC_MEAN": 0.945945945945946,
+  "OWN_CAR_AGE": 9,
+  "PAYMENT_RATE": 0.0710949347892023,
+  "POS_MONTHS_BALANCE_SIZE": 40,
+  "PREV_CNT_PAYMENT_MEAN": 15.142857142857142
+}'
 ```
 
 ### Exemple de réponse
 
 ```json
 {
+  "client_id": "req_20260205103137658530",
+  "confidence": 0.8117,
+  "decision": "REJECTED",
+  "inference_time_ms": 9.67,
+  "score": 0.1883
 }
 ```
 
@@ -109,13 +156,14 @@ curl -X POST "http://localhost:8000/predict" \
 
 - `GET /health` : Vérification de santé de l'API
 - `POST /predict` : Prédiction de score
+- `POST /predict_batch` : Prédiction de scores en parallèle sur un batch de données
 - `GET /docs` : Documentation Swagger interactive
 
 ## 🧪 Tests
 
 ```bash
 # Lancer tous les tests
-pytest tests/ -v
+pytest -v
 
 # Lancer avec couverture
 pytest tests/ --cov-report=html
@@ -147,24 +195,13 @@ Le pipeline GitHub Actions s'exécute automatiquement à chaque push sur `main` 
 1. ✅ Installation des dépendances
 2. ✅ Exécution des tests unitaires
 3. ✅ Construction de l'image Docker
-4. ✅ Déploiement sur Hugging Face Spaces 
+4. ✅ Déploiement sur Docker HUB
 
 ### Configuration requise
 
-Ajouter ces secrets dans GitHub Settings > Secrets :
+Ajouter ces secrets dans GitHub Settings > Actions secrets and variables > Repository secrets :
 
-- `HF_TOKEN` : Token Hugging Face (optionnel)
-
-## 📦 Déploiement sur Hugging Face Spaces
-
-```bash
-# 1. Créer un nouveau Space sur Hugging Face
-# 2. Configurer le secret HF_TOKEN dans GitHub
-# 3. Pusher sur la branche main
-git push origin main
-
-# Le déploiement se fait automatiquement via GitHub Actions
-```
+- `DOCKERHUB_TOKEN` : Docker HUB Token
 
 ## 🔍 Data Drift Analysis
 
@@ -173,7 +210,6 @@ Le notebook `notebooks/drift_analysis.ipynb` contient :
 - Analyse comparative des distributions
 - Tests statistiques (Kolmogorov-Smirnov, Chi-Square)
 - Visualisations des drifts
-- Recommandations de re-entraînement
 
 ## ⚡ Optimisations Implémentées
 
@@ -189,12 +225,10 @@ Les logs de production contiennent :
 
 ```json
 {
-  "timestamp": "2025-02-02T10:30:00",
-  "client_id": "client_123",
-  "input": {...},
-  "output": {...},
-  "inference_time_ms": 12.5,
-  "model_version": "v1.0.0"
+{"timestamp": "2026-02-11T10:26:19.138831", 
+"input": {}, 
+"output": {"client_id": "req_20260211102619138813", "score": 0.0929, "decision": "REJECTED", "confidence": 0.1339, "inference_time_ms": 0.9}, 
+"model_version": "1.0.0"}
 }
 ```
 
