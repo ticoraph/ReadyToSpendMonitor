@@ -20,6 +20,8 @@ COPY models models
 COPY monitoring monitoring
 COPY scripts scripts
 COPY tests tests
+COPY output/dataset_test_top40.csv output/dataset_test_top40.csv
+COPY output/dataset_train_top40.csv output/dataset_train_top40.csv
 
 # Créer les dossiers nécessaires
 RUN mkdir -p logs

@@ -256,7 +256,7 @@ for feature in features:
                 'Feature': feature,
                 'KS Statistic': ks_stat,
                 'P-Value': p_value,
-                'Drift Détecté': '🔴 OUI' if p_value < 0.05 else '🟢 NON'
+                'Drift Détecté': '🔴 OUI' if p_value < 0.01 else '🟢 NON'
             })
 
 if drift_results:
@@ -264,7 +264,7 @@ if drift_results:
     st.dataframe(drift_df, use_container_width=True)
     
     # Alertes
-    drifted_features = [r['Feature'] for r in drift_results if r['P-Value'] < 0]
+    drifted_features = [r['Feature'] for r in drift_results if r['P-Value'] < 0.01]
     if drifted_features:
         st.error(f"⚠️ **ALERTE DRIFT**: Drift détecté sur {len(drifted_features)} feature(s): {', '.join(drifted_features)}")
         st.warning("💡 **Recommandation**: Considérez un ré-entraînement du modèle avec des données récentes.")
