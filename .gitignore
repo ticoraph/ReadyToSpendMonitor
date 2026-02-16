@@ -208,7 +208,7 @@ __marimo__/
 local/
 input/
 output/*
-output/dataset_test_top40.csv
-output/dataset_train_top40.csv
+!output/dataset_test_top40.csv
+!output/dataset_train_top40.csv
 logs/
 drafts/
