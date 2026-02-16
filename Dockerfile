@@ -2,7 +2,7 @@
 FROM python:3.10-slim
 
 RUN apt-get update && \
-    apt-get install -y libgomp1 curl && \
+    apt-get install -y libgomp1 curl supervisor && \
     rm -rf /var/lib/apt/lists/*
 
 # Définir le répertoire de travail
@@ -18,15 +18,17 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY api api
 COPY models models
 COPY monitoring monitoring
-COPY tests tests
-#COPY output output
 COPY scripts scripts
+COPY tests tests
 
 # Créer les dossiers nécessaires
 RUN mkdir -p logs
 
-# Exposer le port 8000
+# Configurer Supervisor pour gérer les processus
+COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
+# Exposer les ports
 EXPOSE 8000 8501
 
-# Commande pour lancer l'API
-#CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Lancer Supervisor
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
